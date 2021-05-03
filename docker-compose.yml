@@ -5,7 +5,7 @@ version: "3"
 services:
   nginx:
       container_name: marple-nginx
-      image: localhost:5000/marple-nginx
+      image: docker.getmarple.io/marple-nginx
       ports:
         - "80:80"
       depends_on:
@@ -15,7 +15,7 @@ services:
 
   core:
       container_name: marple-core
-      image: localhost:5000/marple-core
+      image: docker.getmarple.io/marple-core
       volumes:
         - '$MARPLE_HOME:/srv/marple'
         - '$MARPLE_FILE_SERVER:/etc/file_server'
