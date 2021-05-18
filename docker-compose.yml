@@ -1,13 +1,13 @@
 version: "3"
 
-# WARNING, THIS FILE IS A COPY OF docker-compose.yml, BOTH WITH THE "BUILD" SECTIONS LEFT OUT
+# WARNING, THIS FILE IS A COPY OF docker-compose.yml, WITH THE "BUILD" SECTIONS LEFT OUT
 # THIS FILE SHOULD NEVER BE MODIFIED DIRECTLY
 services:
   nginx:
       container_name: marple-nginx
       image: docker.getmarple.io/marple-nginx
       ports:
-        - "80:80"
+        - "80:80" # first port is host
       depends_on:
         - core
         - timescale
