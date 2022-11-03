@@ -4,7 +4,7 @@
 services:
   marple:
     container_name: marple
-    image: docker.getmarple.io/marple:2.5.1
+    image: docker.getmarple.io/marple:2.5.2
     environment:
       - MARPLE_AUTO_JOIN_WORKSPACE=true
       - MARPLE_SEND_MAIL=false
