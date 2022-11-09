@@ -6,9 +6,6 @@ services:
   marple:
     container_name: marple
     image: docker.getmarple.io/marple
-    build:
-      context: .
-      dockerfile: ./Dockerfile
     environment:
       - MARPLE_DEPLOYMENT=$MARPLE_DEPLOYMENT
       - MARPLE_PUBLIC_URL=$MARPLE_PUBLIC_URL
