@@ -1,7 +1,7 @@
 # This is the default configuration for running Marple on-premise
 # A postgres in docker is included, but it is optional, see .env for configuration
 # Please get in touch with support@marpledata.com for guidance and licensing
-#docker-compose suited for Marple deployments (staging, saas)
+# docker-compose setup suited for Marple deployments (staging, saas)
 services:
   marple:
     container_name: marple
@@ -15,6 +15,7 @@ services:
       - MARPLE_AUTH0_DOMAIN=$MARPLE_AUTH0_DOMAIN
       - MARPLE_AUTH0_MARPLE_API_AUDIENCE=$MARPLE_AUTH0_MARPLE_API_AUDIENCE
       - MARPLE_AUTH0_MARPLE_APP_CLIENT_ID=$MARPLE_AUTH0_MARPLE_APP_CLIENT_ID
+      - MARPLE_TIMESCALE_HOST=$MARPLE_POSTGRES_HOST
       - MARPLE_TIMESCALE_PORT=$MARPLE_POSTGRES_PORT
       - MARPLE_TIMESCALE_DB_NAME=$MARPLE_POSTGRES_DB_NAME
       - MARPLE_TIMESCALE_PW=$MARPLE_POSTGRES_PW
