@@ -1,8 +1,9 @@
 # Marple installation
 
-This repository contains everything you need to set up Marple on-premise.
+This repository contains everything you need to set up [Marple](https://marpledata.com) on-premise.
 
 ⚠️ You need a trial license to run the software, so get in touch with [support@marpledata.com](mailto:support@marpledata.com) before you get started.
+
 
 ## Requirements
 
@@ -11,12 +12,13 @@ Marple requires the following software
 - [PostgreSQL](https://www.postgresql.org/) server (optionally)
 
 The minimal specs for the docker environment are
-- Linux
+- Linux (x86, ARM is not supported)
 - 8 GB RAM
 - 4 vCPU
 - 20 GB storage, that can be mounted as a [volume](https://docs.docker.com/storage/volumes/)
 - A working internet connection, to pull the Marple container
 - A network connection for clients to connect, with 100 Mbit/s upload speed, and equal or better download speed
+
 
 ## Set up
 
@@ -46,6 +48,17 @@ You can choose to run PostgreSQL as a second container using docker-compose, or 
 6. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
 7. Open a shell inside the directory with `docker-compose.yml`
 8. Execute `docker-compose up -d` to start Marple
+9. Verify that Marple runs on the desired URL. Finish the setup in Marple
+
+
+## Security
+
+Marple runs over HTTP. We strongly recommend to additional security, as we do for [our own cloud offering](https://app.marpledata.com).
+
+Possible measures are
+- HTTPS (e.g. a reverse proxy in front of Marple)
+- VPN (to only allow authorized users to access the host)
+
 
 ## Updating
 
