@@ -59,7 +59,16 @@ Possible measures are
 - HTTPS (e.g. a reverse proxy in front of Marple)
 - VPN (to only allow authorized users to access the host)
 
-Additionally, a backup system should be put in place, both for the raw data files and the database.
+The Marple instance should be assigned to a fix URL to prevent phishing and establish trust in general.
+Preferably someting like `marple.yourcompany.com`, but `marple-your-company.azurecontainers.com` can also work. Deploying at a raw IP like `212.123.3.242` should be avoided. Even worse would be an IP changing on each deployment.
+
+
+## Backups
+
+A backup system should be put in place, for
+1. The raw data files (`.csv`, `.mat`, ...)
+2. The postgres storage (containing user data, notes, etc among other things)
+
 
 ## Updating
 
