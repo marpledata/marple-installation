@@ -58,6 +58,7 @@ By default, the Postgres database is run as a second container in docker-compose
 If you do so, here are our recommendations:
 - Use Postgres version 14
 - Allocate at least 2 vCPU + 4GB RAM, but preferably more
+- (Azure only) make sure the `UUID_OSSP` extension is enabled
 
 To connect Marple to your Postgres, follow step 4 from the _"Set up"_ instructions above
 
