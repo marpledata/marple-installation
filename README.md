@@ -9,7 +9,7 @@ This repository contains everything you need to set up [Marple](https://marpleda
 
 Marple requires the following software
 - [Docker-compose](https://docs.docker.com/compose/)
-- [PostgreSQL](https://www.postgresql.org/) server (optionally)
+- [PostgreSQL](https://www.postgresql.org/) server (optionally, see _"Using an external Postgres"_ below)
 
 The minimal specs for the docker environment are
 - Linux (x86, ARM is not supported)
@@ -24,9 +24,6 @@ The minimal specs for the docker environment are
 
 ⚠️ This instructions assume you are setting up Marple on a virtual machine (VM). If you want to run the container directly in the cloud, some steps are not relevant.
 
-You can choose to run PostgreSQL as a second container using docker-compose, or to host it separately from Marple. See step 4 for details.
-
-
 1. Verify that you got the following info from the Marple team
     - A `license.json` file
     - Credentials for the docker registry
@@ -38,7 +35,7 @@ You can choose to run PostgreSQL as a second container using docker-compose, or 
     - `MARPLE_IS_OFFLINE` = true (this will disable auth0 external authentication)
     - `MARPLE_HOME` = path to a directory (volume) where configuration files can be stored
     - `MARPLE_FILESYSTEM` = path where data files can be stored, can be the same as `MARPLE_HOME`
-4. (Optionally) configure an external PostgreSQL. In the same `.env`, set
+4. (Optionally) configure an external Postgres. In the same `.env`, set
     - `MARPLE_POSTGRES_HOST` = IP or hostname
     - `MARPLE_POSTGRES_PORT` = port exposed by PostgreSQL, usually 5432
     - `MARPLE_POSTGRES_USER` = postgres user
@@ -50,6 +47,20 @@ You can choose to run PostgreSQL as a second container using docker-compose, or 
 8. Execute `docker-compose up -d` to start Marple
 9. Verify that Marple runs on the desired URL. Finish the setup in Marple
 
+## Using an external Postgres
+
+By default, the Postgres database is run as a second container in docker-compose.You can choose to set it up externally, using:
+- Database as a service (on AWS, GCP, Azure, ...)
+- A separate VM
+- A separate process on the same instance
+- ...
+
+If you do so, here are our recommendations:
+- Use Postgres version 14
+- Allocate at least 2 vCPU + 4GB RAM, but preferably more
+- (Azure only) make sure the `UUID_OSSP` extension is enabled
+
+To connect Marple to your Postgres, follow step 4 from the _"Set up"_ instructions above
 
 ## Security
 
