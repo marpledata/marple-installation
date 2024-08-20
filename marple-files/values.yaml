@@ -8,13 +8,13 @@ env:
   - name: MARPLE_AUTO_JOIN_WORKSPACE
     value: "true"
   - name: MARPLE_TIMESCALE_HOST
-    value: 192.168.84.179
+    value: "TODO"
   - name: MARPLE_TIMESCALE_PORT
     value: "5432"
   - name: MARPLE_TIMESCALE_USER
-    value: marple
+    value: "TODO"
   - name: MARPLE_TIMESCALE_PW
-    value: secret
+    value: "TODO"
 
 imagePullSecrets:
   - name: docker-regcred
