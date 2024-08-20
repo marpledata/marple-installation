@@ -1,0 +1,29 @@
+secretName: marple-secrets
+
+env:
+  - name: MARPLE_DEPLOYMENT
+    value: "TODO" # Ask Marple team, e.g. Your-company
+  - name: MARPLE_CONNECTION_TYPE
+    value: "TODO"
+  - name: MARPLE_LOG_SHOULD_UPLOAD
+    value: "true"
+  - name: MARPLE_POSTGRES_HOST
+    value: "TODO"
+  - name: MARPLE_POSTGRES_DB_NAME
+    value: "TODO"
+  - name: MARPLE_POSTGRES_USER
+    value: "TODO"
+  - name: MARPLE_POSTGRES_PW
+    value: "TODO"
+  - name: MARPLE_AUTH_PROVIDER
+    value: OAUTH
+  - name: MARPLE_OAUTH_DOMAIN
+    value: "TODO"
+  - name: MARPLE_OAUTH_API_AUDIENCE
+    value: "TODO"
+  - name: MARPLE_OAUTH_APP_CLIENT_ID
+    value: "TODO"
+  - name: MARPLE_CONN_SECRET
+    value: tenant-auth
+  - name: MARPLE_REVISION
+    value: "0"
