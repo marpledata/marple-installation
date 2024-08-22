@@ -23,8 +23,6 @@ env:
     value: "TODO"
   - name: MARPLE_CONN_SECRET
     value: tenant-auth
-  - name: MARPLE_REVISION
-    value: "0"
 
 # required to be able to pull from docker.getmarple.io
 imagePullSecrets:
