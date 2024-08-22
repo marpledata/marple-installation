@@ -16,7 +16,7 @@ env:
   - name: MARPLE_TIMESCALE_PW
     value: "TODO"
 
-# required to be able to pull from docker.getmarple.io
+# required to pull containers from docker.getmarple.io
 imagePullSecrets:
   - name: docker-regcred
 

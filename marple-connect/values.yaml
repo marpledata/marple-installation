@@ -24,7 +24,7 @@ env:
   - name: MARPLE_CONN_SECRET
     value: tenant-auth
 
-# required to be able to pull from docker.getmarple.io
+# required to pull containers from docker.getmarple.io
 imagePullSecrets:
   - name: docker-regcred
 
