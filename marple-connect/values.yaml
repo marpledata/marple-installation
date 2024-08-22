@@ -8,7 +8,9 @@ env:
   - name: MARPLE_POSTGRES_HOST
     value: "TODO"
   - name: MARPLE_POSTGRES_DB_NAME
-    value: "TODO"
+    value: "marple"
+  - name: MARPLE_POSTGRES_PORT
+    value: "5432"
   - name: MARPLE_POSTGRES_USER
     value: "TODO"
   - name: MARPLE_POSTGRES_PW

@@ -9,6 +9,8 @@ env:
     value: "true"
   - name: MARPLE_TIMESCALE_HOST
     value: "TODO"
+  - name: MARPLE_TIMESCALE_DB_NAME
+    value: "marple"
   - name: MARPLE_TIMESCALE_PORT
     value: "5432"
   - name: MARPLE_TIMESCALE_USER
