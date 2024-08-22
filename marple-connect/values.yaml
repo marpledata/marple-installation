@@ -26,7 +26,8 @@ env:
   - name: MARPLE_REVISION
     value: "0"
 
-secretName: marple-secrets
-
+# required to be able to pull from docker.getmarple.io
 imagePullSecrets:
   - name: docker-regcred
+
+secretName: marple-secrets
