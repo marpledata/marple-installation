@@ -3,8 +3,8 @@ env:
     value: "TODO" # Ask Marple team, e.g. Your-company
   - name: MARPLE_CONNECTION_TYPE
     value: "TODO"
-  - name: MARPLE_LOG_SHOULD_UPLOAD
-    value: "true"
+  - name: MARPLE_PUBLIC_URL
+    value: "TODO" # e.g. marple.yourcompany.com
   - name: MARPLE_POSTGRES_HOST
     value: "TODO"
   - name: MARPLE_POSTGRES_DB_NAME
