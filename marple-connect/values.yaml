@@ -30,4 +30,9 @@ env:
 imagePullSecrets:
   - name: docker-regcred
 
+# for exposing :80 publicly
+service:
+  enabled: true
+
+# credentials to connect to database
 secretName: marple-secrets

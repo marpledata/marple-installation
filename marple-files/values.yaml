@@ -25,7 +25,3 @@ imagePullSecrets:
 # for exposing :80 publicly
 service:
   enabled: true
-
-volume:
-  className: standard
-  hostPath: true
