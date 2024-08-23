@@ -5,6 +5,8 @@ env:
     value: "TODO"
   - name: MARPLE_PUBLIC_URL
     value: "TODO" # e.g. marple.yourcompany.com
+  - name: MARPLE_AUTO_JOIN_WORKSPACE
+    value: "true"
   - name: MARPLE_POSTGRES_HOST
     value: "TODO"
   - name: MARPLE_POSTGRES_DB_NAME
