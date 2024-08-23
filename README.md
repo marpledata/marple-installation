@@ -92,6 +92,7 @@ Minimal specifications
    - `MARPLE_POSTGRES_DB_NAME` = name of a clean database inside the server
 5. Put the `license.json` file in `MARPLE_HOME`
 6. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
+   - Use `cat tenant-auth | base64 -w 0` or a similar approach to encode your secret
 7. Open a shell inside the directory with `docker-compose.yml`
 8. Execute `docker compose up -d` to start Marple
 9. Verify that Marple runs on the desired URL
