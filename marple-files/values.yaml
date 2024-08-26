@@ -1,3 +1,15 @@
+# configuration file for a Marple deployment
+
+# required to pull containers from docker.getmarple.io
+imagePullSecrets:
+  - name: docker-regcred
+
+# container
+image:
+  repository: docker.getmarple.io/marple
+  # tag will default to .Chart.AppVersion
+
+# container configuration
 env:
   - name: MARPLE_DEPLOYMENT
     value: "TODO" # Ask Marple team, e.g. Your-company
@@ -18,10 +30,17 @@ env:
   - name: MARPLE_TIMESCALE_PW
     value: "TODO"
 
-# required to pull containers from docker.getmarple.io
-imagePullSecrets:
-  - name: docker-regcred
+# container sizing
+resources:
+  - cpu: 4
+  - memory: 8Gi
 
-# for exposing :80 publicly
+# persistent volume to store files
+volume:
+  storage: 20Gi
+  className: managed-csi
+  hostPath: false
+
+# load balancer to expose HTTP traffic
 service:
-  enabled: true
+  enabled: false
