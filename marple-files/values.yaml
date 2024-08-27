@@ -1,0 +1,46 @@
+# configuration file for a Marple deployment
+
+# required to pull containers from docker.getmarple.io
+imagePullSecrets:
+  - name: docker-regcred
+
+# container
+image:
+  repository: docker.getmarple.io/marple
+  # tag will default to .Chart.AppVersion
+
+# container configuration
+env:
+  - name: MARPLE_DEPLOYMENT
+    value: "TODO" # Ask Marple team, e.g. Your-company
+  - name: MARPLE_PUBLIC_URL
+    value: "TODO" # e.g. marple.yourcompany.com
+  - name: MARPLE_IS_OFFLINE
+    value: "true"
+  - name: MARPLE_AUTO_JOIN_WORKSPACE
+    value: "true"
+  - name: MARPLE_TIMESCALE_HOST
+    value: "TODO"
+  - name: MARPLE_TIMESCALE_DB_NAME
+    value: "marple"
+  - name: MARPLE_TIMESCALE_PORT
+    value: "5432"
+  - name: MARPLE_TIMESCALE_USER
+    value: "TODO"
+  - name: MARPLE_TIMESCALE_PW
+    value: "TODO"
+
+# container sizing
+resources:
+  cpu: 4
+  memory: 8Gi
+
+# persistent volume to store files
+volume:
+  storage: 20Gi
+  className: managed-csi
+  hostPath: false
+
+# load balancer to expose HTTP traffic
+service:
+  enabled: false
