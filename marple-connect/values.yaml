@@ -40,8 +40,6 @@ env:
     value: "TODO"
   - name: MARPLE_OAUTH_APP_CLIENT_ID
     value: "TODO"
-  - name: MARPLE_CONN_SECRET
-    value: tenant-auth
 
 # container sizing
 resources:
