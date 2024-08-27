@@ -36,6 +36,8 @@ env:
     value: OFFLINE
   - name: MARPLE_OAUTH_DOMAIN
     value: "TODO"
+  - name: MARPLE_OAUTH_ISSUER
+    value: "TODO"
   - name: MARPLE_OAUTH_API_AUDIENCE
     value: "TODO"
   - name: MARPLE_OAUTH_APP_CLIENT_ID
