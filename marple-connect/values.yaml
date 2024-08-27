@@ -1,3 +1,18 @@
+# configuration file for a Marple deployment
+
+# required to pull containers from docker.getmarple.io
+imagePullSecrets:
+  - name: docker-regcred
+
+# secret with database/IdP credentials
+secretName: marple-secrets
+
+# container
+image:
+  repository: docker.getmarple.io/marple
+  # tag will default to .Chart.AppVersion
+
+# container configuration
 env:
   - name: MARPLE_DEPLOYMENT
     value: "TODO" # Ask Marple team, e.g. Your-company
@@ -5,6 +20,8 @@ env:
     value: "TODO"
   - name: MARPLE_PUBLIC_URL
     value: "TODO" # e.g. marple.yourcompany.com
+  - name: MARPLE_IS_OFFLINE
+    value: "true"
   - name: MARPLE_AUTO_JOIN_WORKSPACE
     value: "true"
   - name: MARPLE_POSTGRES_HOST
@@ -28,13 +45,17 @@ env:
   - name: MARPLE_CONN_SECRET
     value: tenant-auth
 
-# required to pull containers from docker.getmarple.io
-imagePullSecrets:
-  - name: docker-regcred
+# container sizing
+resources:
+  cpu: "4"
+  memory: "8Gi"
 
-# for exposing :80 publicly
+# persistent volume to store files
+volume:
+  storage: 20Gi
+  className: managed-csi
+  hostPath: false
+
+# load balancer to expose HTTP traffic
 service:
-  enabled: true
-
-# credentials to connect to database
-secretName: marple-secrets
+  enabled: false
