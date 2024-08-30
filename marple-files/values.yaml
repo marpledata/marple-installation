@@ -32,8 +32,8 @@ env:
 
 # container sizing
 resources:
-  cpu: 4
-  memory: 8Gi
+  cpu: "4"
+  memory: "8Gi"
 
 # persistent volume to store files
 volume:
