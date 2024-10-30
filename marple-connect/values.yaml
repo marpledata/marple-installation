@@ -10,6 +10,7 @@ secretName: marple-secrets
 # container
 image:
   repository: docker.getmarple.io/marple
+  pullPolicy: IfNotPresent
   # tag will default to .Chart.AppVersion
 
 # container configuration
