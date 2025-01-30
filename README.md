@@ -8,7 +8,7 @@ This repository contains everything you need to set up [Marple](https://marpleda
 
 There are two product lines of Marple:
 
-1. **Marple Connect**, which connects to an existing database with time series data
+1. **Marple Insight**, which connects to an existing database with time series data
 2. **Marple Files**, which can be used to import data files like `.csv`, `.tdms`, `.mat`, ...
 
 Deployment files are respectively in `marple-insight/` and `marple-files/` in this repository.
@@ -54,7 +54,7 @@ Minimal specifications
 
 ## Deploying using Docker Compose
 
-⚠ This option is currently only available for Marple Files, not for Marple Connect (see explanation on top).
+⚠ This option is currently only available for Marple Files, not for Marple Insight (see explanation on top).
 
 ### Requirements
 
