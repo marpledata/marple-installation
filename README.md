@@ -11,7 +11,7 @@ There are two product lines of Marple:
 1. **Marple Connect**, which connects to an existing database with time series data
 2. **Marple Files**, which can be used to import data files like `.csv`, `.tdms`, `.mat`, ...
 
-Deployment files are respectively in `marple-connect/` and `marple-files/` in this repository.
+Deployment files are respectively in `marple-insight/` and `marple-files/` in this repository.
 
 Both of them can be deployed using [Kubernetes](https://kubernetes.io/). Marple Files can also be deployed using [Docker Compose](https://docs.docker.com/compose/). The instructions are outlined below.
 
