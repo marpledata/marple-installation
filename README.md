@@ -2,7 +2,7 @@
 
 This repository contains everything you need to set up [Marple](https://marpledata.com) on your own cloud or hardware.
 
-⚠️ You need a trial license to run the software, so get in touch with [support@marpledata.com](mailto:support@marpledata.com) before you get started.
+ℹ You need a **trial license** to run the software, so get in touch with [support@marpledata.com](mailto:support@marpledata.com) before you get started.
 
 ## What version of Marple do I need?
 
@@ -13,7 +13,7 @@ There are two product lines of Marple:
 
 Deployment files are respectively in `marple-insight/` and `marple-files/` in this repository.
 
-Both of them can be deployed using [Kubernetes](https://kubernetes.io/). Marple Files can also be deployed using [Docker Compose](https://docs.docker.com/compose/). The instructions are outlined below.
+Both of them can be deployed using [Kubernetes](https://kubernetes.io/) and [Docker Compose](https://docs.docker.com/compose/). The instructions are outlined below.
 
 ## Deploying using Kubernetes
 
@@ -36,11 +36,11 @@ Minimal specifications
    - Credentials for the docker registry
    - A deployment name, and other required environment variables
 2. Download `values.yaml` and `marple-{x.y.z}.tgz` from this repository
-   - (only for Connect) Download `marple-secrets.yaml`
+   - (only for Marple Insight) Download `marple-secrets.yaml`
 3. Edit `values.yaml`, and set all required values, indicated by `TODO`
 4. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
 5. Set a secret "docker-regcred" that contains the credentials for connecting with our registry _docker.getmarple.io_ ([guide](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/))
-6. (Only for connect) Create a secret containing your database credentials using `kubectl apply -f marple-secrets.yaml`
+6. (Only for Marple Insight) Create a secret containing your database credentials using `kubectl apply -f marple-secrets.yaml`
 7. Execute `helm install marple-prod marple-{x.y.z}.tgz -f values.yaml` to deploy to kubernetes
 8. Verify that Marple runs on the desired URL
 9. Upload your `license.json` file in the UI
@@ -53,8 +53,6 @@ Minimal specifications
 3. Verify that Marple is the latest version by checking the "Settings" → "About" screen
 
 ## Deploying using Docker Compose
-
-⚠ This option is currently only available for Marple Files, not for Marple Insight (see explanation on top).
 
 ### Requirements
 
@@ -112,7 +110,7 @@ Marple needs a Postgres database to work. If you are using Docker Compose, a sec
 
 We recommend:
 
-- Use Postgres version 14
+- Use Postgres version 17
 - Allocate at least 2 vCPU + 4GB RAM, but preferably more
 - (Azure only) make sure the `UUID_OSSP` extension is enabled
 
