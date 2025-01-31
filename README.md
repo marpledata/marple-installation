@@ -60,7 +60,7 @@ Minimal specifications
 
 Software
 
-- [Docker-compose](https://docs.docker.com/compose/)
+- [Docker Compose](https://docs.docker.com/compose/)
 - [PostgreSQL](https://www.postgresql.org/) server (optionally, see _"Using an external Postgres"_ below)
 
 Minimal specifications
@@ -93,17 +93,17 @@ Minimal specifications
 5. Put the `license.json` file in `MARPLE_HOME`
 6. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
    - Use `cat tenant-auth | base64 -w 0` or a similar approach to encode your secret
-7. Open a shell inside the directory with `docker-compose.yml`
+7. Open a shell inside the directory with `docker-compose.yaml`
 8. Execute `docker compose up -d` to start Marple
 9. Verify that Marple runs on the desired URL
 10. Finish the setup in Marple
 
 ### Updating
 
-1. Edit `docker-compose.yml`
+1. Edit `docker-compose.yaml`
 2. Set the marple container version to the latest version, e.g. `2.6.0`
-3. `docker-compose pull`
-4. `docker-compose up -d`
+3. `docker compose pull`
+4. `docker compose up -d`
 5. Verify that Marple is the latest version by checking the "Settings" → "About" screen
 
 ## Using an external Postgres
