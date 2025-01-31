@@ -40,7 +40,7 @@ Minimal specifications
 3. Edit `values.yaml`, and set all required values, indicated by `TODO`
 4. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
 5. Set a secret "docker-regcred" that contains the credentials for connecting with our registry _docker.getmarple.io_ ([guide](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/))
-6. (Only for Marple Insight) Create a secret containing your database credentials using `kubectl apply -f marple-secrets.yaml`
+6. (Only for Marple Insight) Create a secret containing your database credentials using `cat tenant-auth | base64 -w 0` and `kubectl apply -f marple-secrets.yaml`
 7. Execute `helm install marple-prod marple-{x.y.z}.tgz -f values.yaml` to deploy to kubernetes
 8. Verify that Marple runs on the desired URL
 9. Upload your `license.json` file in the UI
@@ -79,9 +79,8 @@ Minimal specifications
 3. Edit `.env`, and set
    - `MARPLE_DEPLOYMENT` = the deployment name you got from the Marple team
    - `MARPLE_PUBLIC_URL` = the hostname where the application will be reachable
-   - `MARPLE_IS_OFFLINE` = true (this will disable auth0 external authentication)
-   - `MARPLE_HOME` = path to a directory (volume) where configuration files can be stored
-   - `MARPLE_FILESYSTEM` = path where data files can be stored, can be the same as `MARPLE_HOME`
+   - `MARPLE_IS_OFFLINE` = OAUTH if you want to connect your IdP
+   - `MARPLE_PATH_ROOT` = path to a directory (volume) where configuration files can be stored
 4. (Optionally) configure an external Postgres. In the same `.env`, set
    - `MARPLE_POSTGRES_HOST` = IP or hostname
    - `MARPLE_POSTGRES_PORT` = port exposed by PostgreSQL, usually 5432
@@ -90,7 +89,6 @@ Minimal specifications
    - `MARPLE_POSTGRES_DB_NAME` = name of a clean database inside the server
 5. Put the `license.json` file in `MARPLE_HOME`
 6. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
-   - Use `cat tenant-auth | base64 -w 0` or a similar approach to encode your secret
 7. Open a shell inside the directory with `docker-compose.yaml`
 8. Execute `docker compose up -d` to start Marple
 9. Verify that Marple runs on the desired URL
