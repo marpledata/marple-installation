@@ -36,15 +36,13 @@ Minimal specifications
    - Credentials for the docker registry
    - A deployment name, and other required environment variables
 2. Download `values.yaml` and `marple-{x.y.z}.tgz` from this repository
-   - (only for Marple Insight) Download `marple-secrets.yaml`
 3. Edit `values.yaml`, and set all required values, indicated by `TODO`
 4. Open a shell and authenticate with the docker registry with `docker login https://docker.getmarple.io`
 5. Set a secret "docker-regcred" that contains the credentials for connecting with our registry _docker.getmarple.io_ ([guide](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/))
-6. (Only for Marple Insight) Create a secret containing your database credentials using `cat tenant-auth | base64 -w 0` and `kubectl apply -f marple-secrets.yaml`
-7. Execute `helm install marple-prod marple-{x.y.z}.tgz -f values.yaml` to deploy to kubernetes
-8. Verify that Marple runs on the desired URL
-9. Upload your `license.json` file in the UI
-10. Finish additional configuration inside the UI
+6. Execute `helm install marple-prod marple-{x.y.z}.tgz -f values.yaml` to deploy to kubernetes
+7. Verify that Marple runs on the desired URL
+8. Upload your `license.json` file in the UI
+9. Finish additional configuration inside the UI
 
 ### Updating
 
@@ -79,7 +77,7 @@ Minimal specifications
 3. Edit `.env`, and set
    - `MARPLE_DEPLOYMENT` = the deployment name you got from the Marple team
    - `MARPLE_PUBLIC_URL` = the hostname where the application will be reachable
-   - `MARPLE_IS_OFFLINE` = OAUTH if you want to connect your IdP
+   - `MARPLE_AUTH_PROVIDER` = OAUTH if you want to connect your IdP (default is OFFLINE)
    - `MARPLE_PATH_ROOT` = path to a directory (volume) where configuration files can be stored
 4. (Optionally) configure an external Postgres. In the same `.env`, set
    - `MARPLE_POSTGRES_HOST` = IP or hostname
