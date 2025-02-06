@@ -1,29 +1,15 @@
-# This is the default configuration for running Marple Insight self-managed
-# A postgres in docker is included, but it is optional, see .env for configuration
-# Please get in touch with support@marpledata.com for guidance and licensing
+#docker-compose suited for Marple connect deployments (staging nightly)
 services:
   marple:
     container_name: $MARPLE_CONTAINER_NAME
     image: docker.getmarple.io/marple:$MARPLE_VERSION
-    environment:
-      - MARPLE_DEPLOYMENT=$MARPLE_DEPLOYMENT
-      - MARPLE_PUBLIC_URL=$MARPLE_PUBLIC_URL
-      - MARPLE_AUTO_JOIN_WORKSPACE=$MARPLE_AUTO_JOIN_WORKSPACE
-      - MARPLE_AUTH_PROVIDER=$MARPLE_AUTH_PROVIDER
-      - MARPLE_OAUTH_DOMAIN=$MARPLE_OAUTH_DOMAIN
-      - MARPLE_OAUTH_ISSUER=$MARPLE_OAUTH_ISSUER
-      - MARPLE_OAUTH_API_AUDIENCE=$MARPLE_OAUTH_API_AUDIENCE
-      - MARPLE_OAUTH_APP_CLIENT_ID=$MARPLE_OAUTH_APP_CLIENT_ID
-      - MARPLE_OAUTH_SCOPE=$MARPLE_OAUTH_SCOPE
-      - MARPLE_POSTGRES_HOST=$MARPLE_POSTGRES_HOST
-      - MARPLE_POSTGRES_PORT=$MARPLE_POSTGRES_PORT
-      - MARPLE_POSTGRES_DB_NAME=$MARPLE_POSTGRES_DB_NAME
-      - MARPLE_POSTGRES_PW=$MARPLE_POSTGRES_PW
-      - MARPLE_POSTGRES_USER=$MARPLE_POSTGRES_USER
+    environment_file:
+      - .env
     ports:
       - $MARPLE_PORT:80 # first port is host
     volumes:
-      - $MARPLE_PATH_ROOT:/srv/marple
+      # This should match the PATH_ROOT value in marple-deployment/core/config.yaml
+      - $DOCKER_PATH_ROOT:/srv/marple
     depends_on:
       - postgres
     restart: unless-stopped
@@ -38,7 +24,7 @@ services:
       - TS_TUNE_MEMORY=$MARPLE_POSTGRES_RAM # = 25% if 4 GB RAM
     shm_size: 256mb
     volumes:
-      - "$MARPLE_PATH_ROOT/db:/var/lib/postgresql/data"
+      - "$DOCKER_PATH_ROOT/db:/var/lib/postgresql/data"
     ports:
       - $MARPLE_POSTGRES_PORT:$MARPLE_POSTGRES_PORT
     expose:
