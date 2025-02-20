@@ -4,9 +4,6 @@
 imagePullSecrets:
   - name: docker-regcred
 
-# secret with database/IdP credentials
-secretName: marple-secrets
-
 # container
 image:
   repository: docker.getmarple.io/marple
@@ -15,24 +12,20 @@ image:
 
 # container configuration
 env:
-  - name: MARPLE_DEPLOYMENT
-    value: "TODO" # Ask Marple team, e.g. Your-company
-  - name: MARPLE_CONNECTION_TYPE
-    value: "TODO"
-  - name: MARPLE_PUBLIC_URL
-    value: "TODO" # e.g. marple.yourcompany.com
-  - name: MARPLE_AUTO_JOIN_WORKSPACE
-    value: "true"
   - name: MARPLE_POSTGRES_HOST
     value: "TODO"
-  - name: MARPLE_POSTGRES_DB_NAME
-    value: "marple"
   - name: MARPLE_POSTGRES_PORT
     value: "5432"
   - name: MARPLE_POSTGRES_USER
     value: "TODO"
   - name: MARPLE_POSTGRES_PW
     value: "TODO"
+  - name: MARPLE_POSTGRES_DB_NAME
+    value: "marple"
+  - name: MARPLE_DEPLOYMENT
+    value: "TODO" # Ask Marple team, e.g. Your-company
+  - name: MARPLE_PUBLIC_URL
+    value: "TODO" # e.g. marple.yourcompany.com
   - name: MARPLE_AUTH_PROVIDER
     value: OFFLINE
   - name: MARPLE_OAUTH_DOMAIN
@@ -43,7 +36,20 @@ env:
     value: "TODO"
   - name: MARPLE_OAUTH_APP_CLIENT_ID
     value: "TODO"
-
+  - name: MARPLE_OAUTH_SCOPE
+    value: "" # Optionally
+  - name: MARPLE_OAUTH_GROUP_KEY
+    value: "" # Optionally, to assign users to workspaces from IdP
+  - name: MARPLE_AUTO_JOIN_WORKSPACE
+    value: "false"
+  - name: MARPLE_AUTO_CREATE_WORKSPACE
+    value: "false"
+  - name: MARPLE_SUPERUSER_ID
+    value: "" # has to be a sub from your IdP
+  - name: MARPLE_SUPERUSER_GROUP
+    value: "" # has to be a group from your IdP
+  - name: MARPLE_POSTMARK_SEND_MAIL
+    value: true # send emails on user invites
 # container sizing
 resources:
   cpu: "4"
