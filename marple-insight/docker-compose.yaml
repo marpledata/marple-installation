@@ -3,7 +3,7 @@ services:
   marple:
     container_name: $MARPLE_CONTAINER_NAME
     image: docker.getmarple.io/marple:$MARPLE_VERSION
-    environment_file:
+    env_file:
       - .env
     ports:
       - $MARPLE_PORT:80 # first port is host
