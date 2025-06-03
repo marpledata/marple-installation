@@ -1,0 +1,30 @@
+services:
+  marpledb:
+    container_name: $MDB_CONTAINER_NAME
+    image: docker.getmarple.io/marpledb:$MDB_VERSION
+    env_file:
+      - .env # passes everyting from .env on to container
+    ports:
+      - $MDB_PORT:80 # first port is host
+    volumes:
+      - $DOCKER_PATH_ROOT:/srv/marpledb
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    container_name: $MDB_DB_HOST
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=$MDB_DB_USER
+      - POSTGRES_PASSWORD=$MDB_DB_PASSWORD
+      - POSTGRES_DB=$MDB_DB_NAME
+    shm_size: 512mb # takes system RAM
+    volumes:
+      - "$DOCKER_PATH_ROOT/db:/var/lib/postgresql/data"
+    ports:
+      - $MDB_DB_PORT:$MDB_DB_PORT
+    expose:
+      - $MDB_DB_PORT
+    command: -p $MDB_DB_PORT
+    restart: unless-stopped
