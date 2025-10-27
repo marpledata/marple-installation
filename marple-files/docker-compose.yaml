@@ -5,7 +5,7 @@
 services:
   marple:
     container_name: marple
-    image: docker.getmarple.io/marple:$MARPLE_VERSION
+    image: docker.marpledata.com/library/marple:$MARPLE_VERSION
     environment:
       - MARPLE_DEPLOYMENT=$MARPLE_DEPLOYMENT
       - MARPLE_PUBLIC_URL=$MARPLE_PUBLIC_URL

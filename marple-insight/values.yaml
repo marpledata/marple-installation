@@ -1,12 +1,12 @@
 # configuration file for a Marple deployment
 
-# required to pull containers from docker.getmarple.io
+# required to pull containers from docker.marpledata.com
 imagePullSecrets:
   - name: docker-regcred
 
 # container
 image:
-  repository: docker.getmarple.io/marple
+  repository: docker.marpledata.com/library/marple
   pullPolicy: IfNotPresent
   # tag will default to .Chart.AppVersion
 

@@ -1,7 +1,7 @@
 services:
   marpledb:
     container_name: $MDB_CONTAINER_NAME
-    image: docker.getmarple.io/marpledb:$MDB_VERSION
+    image: docker.marpledata.com/library/marpledb:$MDB_VERSION
     env_file:
       - .env # passes everyting from .env on to container
     ports:

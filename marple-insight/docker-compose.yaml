@@ -2,7 +2,7 @@
 services:
   marple:
     container_name: $MARPLE_CONTAINER_NAME
-    image: docker.getmarple.io/marple:$MARPLE_VERSION
+    image: docker.marpledata.com/library/marple:$MARPLE_VERSION
     env_file:
       - .env
     ports:
