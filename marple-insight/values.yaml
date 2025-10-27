@@ -61,6 +61,16 @@ volume:
   className: managed-csi
   hostPath: false
 
-# load balancer to expose HTTP traffic
+# service configuration for exposing HTTP traffic
 service:
   enabled: false
+  # Service type: ClusterIP (internal), NodePort (limited external), LoadBalancer (full external)
+  type: ClusterIP
+  # NodePort for NodePort service type (default: 30080)
+  nodePort: 30080
+  # Annotations for service (useful for cloud provider specific settings)
+  annotations:
+    {}
+    # Example for Azure internal LoadBalancer:
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    # service.beta.kubernetes.io/azure-load-balancer-sku: "Standard"
