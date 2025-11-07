@@ -1,8 +1,9 @@
-#docker-compose suited for Marple connect deployments
+# Docker Compose file for Marple Offline deployment
+# Uses environment variables defined in the .env file located in the same directory
 services:
   marple:
     container_name: $CONTAINER_NAME_INSIGHT
-    image: docker.getmarple.io/marple:$VERSION_INSIGHT
+    image: docker.marpledata.com/library/marple:$VERSION_INSIGHT
     env_file:
       - insight.env
     ports:
@@ -17,7 +18,7 @@ services:
 
   marpledb:
     container_name: $CONTAINER_NAME_DB
-    image: docker.getmarple.io/marpledb:$VERSION_DB
+    image: docker.marpledata.com/library/marple:$VERSION_DB
     env_file:
       - db.env # passes everyting from .env on to container
     ports:
