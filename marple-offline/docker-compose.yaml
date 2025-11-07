@@ -27,6 +27,16 @@ services:
       - $DOCKER_PATH_ROOT/db:/srv/marpledb
     depends_on:
       - postgres
+      - dex
+    restart: unless-stopped
+
+  dex:
+    image: ghcr.io/dexidp/dex:v2.37.0
+    container_name: marple-dex
+    volumes:
+      - ./dex-config.yaml:/etc/dex/config.yaml:ro
+    ports:
+      - "5556:5556"
     restart: unless-stopped
 
   postgres:
