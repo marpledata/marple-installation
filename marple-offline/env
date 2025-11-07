@@ -1,0 +1,23 @@
+# Versions
+VERSION_INSIGHT=connect-1.14.1
+VERSION_DB=2.5.4
+
+# Path to docker-compose.yaml file
+DOCKER_PATH_ROOT="C:\Users\hilge\marple\local-setup" # TODO
+
+### No changes needed below this line ###
+
+CONTAINER_NAME_INSIGHT=marple
+CONTAINER_NAME_DB=marpledb
+CONTAINER_NAME_PG=marple-postgres # = POSTGRES_HOST
+
+# Postgres settings - should match insight.env and db.env
+MARPLE_POSTGRES_PORT=5432
+MARPLE_POSTGRES_USER=marple
+MARPLE_POSTGRES_PW=postgresindocker
+MARPLE_POSTGRES_DB_NAME=marpledb
+MARPLE_POSTGRES_RAM=1GB # set to +- 25% of available RAM
+
+# Web server
+PORT_INSIGHT=8000
+PORT_DB=8002

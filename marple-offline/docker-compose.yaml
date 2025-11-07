@@ -1,0 +1,49 @@
+#docker-compose suited for Marple connect deployments
+services:
+  marple:
+    container_name: $CONTAINER_NAME_INSIGHT
+    image: docker.getmarple.io/marple:$VERSION_INSIGHT
+    env_file:
+      - insight.env
+    ports:
+      - $PORT_INSIGHT:80 # first port is host
+    volumes:
+      # This should match the PATH_ROOT value in marple-deployment/core/config.yaml
+      - $DOCKER_PATH_ROOT/insight:/srv/marple
+    depends_on:
+      - postgres
+      - marpledb
+    restart: unless-stopped
+
+  marpledb:
+    container_name: $CONTAINER_NAME_DB
+    image: docker.getmarple.io/marpledb:$VERSION_DB
+    env_file:
+      - db.env # passes everyting from .env on to container
+    ports:
+      - $PORT_DB:80 # first port is host
+    volumes:
+      - $DOCKER_PATH_ROOT/db:/srv/marpledb
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    container_name: $CONTAINER_NAME_PG
+    image: postgres:17.2-alpine
+    env_file:
+      - insight.env
+    environment:
+      - POSTGRES_USER=$MARPLE_POSTGRES_USER
+      - POSTGRES_PASSWORD=$MARPLE_POSTGRES_PW
+      - POSTGRES_DB=$MARPLE_POSTGRES_DB_NAME
+      - TS_TUNE_MEMORY=$MARPLE_POSTGRES_RAM # = 25% if 4 GB RAM
+    shm_size: 256mb
+    volumes:
+      - $DOCKER_PATH_ROOT/pg:/var/lib/postgresql/data
+    ports:
+      - $MARPLE_POSTGRES_PORT:$MARPLE_POSTGRES_PORT
+    expose:
+      - $MARPLE_POSTGRES_PORT
+    command: -p $MARPLE_POSTGRES_PORT
+    restart: unless-stopped
