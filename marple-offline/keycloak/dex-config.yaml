@@ -80,7 +80,7 @@ staticClients:
   - id: marple-client
     redirectURIs:
       - "http://localhost"
-      - "http://localhost:8000/login"
+      - "http://localhost:8000"
     name: "Marple Client"
     public: true
 
