@@ -56,7 +56,6 @@ services:
       - ./dex-config.yaml:/etc/dex/config.yaml
     ports:
       - "8080:8080"
-    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
