@@ -14,7 +14,7 @@ services:
     ports:
     - ${POSTGRES_PORT:-5432}:5432
     volumes:
-    - ${COMPOSE_PATH_ROOT:-./}/postgresql:/var/lib/postgresql
+    - data-postgres:/var/lib/postgresql
     restart: unless-stopped
 
   minio:
@@ -32,7 +32,7 @@ services:
       - 9001:9001
       - 9000:9000
     volumes:
-    - ${COMPOSE_PATH_ROOT:-./}/minio:/data
+    - data-minio:/data
     restart: unless-stopped
   
   mc:
@@ -114,7 +114,7 @@ services:
     ports:
       - ${COMPOSE_PORT_MARPLE:-80}:80 # first port is host
     volumes:
-      - ${COMPOSE_PATH_ROOT:-./}/insight:/srv/marple
+      - data-insight:/srv/marple
     depends_on:
       - postgres
     restart: unless-stopped
@@ -138,8 +138,14 @@ services:
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes:
-      - ${COMPOSE_PATH_ROOT:-./}/db:/srv/marpledb
+      - data-db:/srv/marpledb
     depends_on:
       - postgres
       - minio
     restart: unless-stopped
+
+volumes:
+  data-minio:
+  data-postgres:
+  data-insight:
+  data-db:
