@@ -1,0 +1,145 @@
+services:
+  postgres:
+    env_file:
+    - .env
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      test:
+      - CMD-SHELL
+      - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+      timeout: 5s
+    image: docker.io/library/postgres:18-alpine
+    ports:
+    - ${POSTGRES_PORT:-5432}:5432
+    volumes:
+    - ${COMPOSE_PATH_ROOT:-./}/postgresql:/var/lib/postgresql
+    restart: unless-stopped
+
+  minio:
+    command:
+    - server
+    - /data
+    - --console-address
+    - :9001
+    image: minio/minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_DOMAIN=minio
+    ports:
+      - 9001:9001
+      - 9000:9000
+    volumes:
+    - ${COMPOSE_PATH_ROOT:-./}/minio:/data
+    restart: unless-stopped
+  
+  mc:
+    depends_on:
+      - minio
+    image: minio/mc
+    environment:
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=us-east-1
+    entrypoint: |
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb minio/mdb;
+      tail -f /dev/null
+      "
+
+  dex:
+    image: dexidp/dex:latest-alpine
+    volumes:
+      - ./dex-config.yaml:/etc/dex/config.yaml
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["dex", "serve", "/etc/dex/config.yaml"]
+    restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - marple.local
+
+#   keycloak:
+#     command: 
+#     - start-dev
+#     - --import-realm
+#     env_file:
+#       - .env
+#     environment:
+#      KC_HOSTNAME: http://marple.local:8080
+#      KC_HTTP_ENABLED: true
+#      KC_DB: postgres
+#      KC_DB_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+#      KC_DB_USERNAME: ${POSTGRES_USER}
+#      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+#     image: quay.io/keycloak/keycloak:latest
+#     ports:
+#     - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
+#     volumes:
+#     - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#     networks:
+#       default:
+#         aliases:
+#           - marple.local
+#     restart: unless-stopped
+
+  marple-insight:
+    image: docker.marpledata.com/library/marple:${VERSION_INSIGHT:-connect-1.17.1}
+    env_file:
+      - .env
+    environment:
+      MARPLE_DEPLOYMENT: $DEPLOYMENT
+      MARPLE_POSTGRES_HOST: postgres
+      MARPLE_POSTGRES_PORT: $POSTGRES_PORT
+      MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
+      MARPLE_POSTGRES_USER: $POSTGRES_USER
+      MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
+      MARPLE_AUTH_PROVIDER: OAUTH
+      MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
+      MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
+      MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
+      MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
+      MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+    ports:
+      - ${COMPOSE_PORT_MARPLE:-80}:80 # first port is host
+    volumes:
+      - ${COMPOSE_PATH_ROOT:-./}/insight:/srv/marple
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  marple-db:
+    image: docker.marpledata.com/library/marpledb:${VERSION_DB:-rc-2.8.1}
+    env_file:
+      - .env
+    environment:
+      MDB_DEPLOYMENT: $DEPLOYMENT
+      MDB_DB_HOST: postgres
+      MDB_DB_PORT: $POSTGRES_PORT
+      MDB_DB_NAME: $POSTGRES_DB
+      MDB_DB_USER: $POSTGRES_USER
+      MDB_DB_PASSWORD: $POSTGRES_PASSWORD
+      MDB_OIDC_DOMAIN: $OIDC_DOMAIN
+      MDB_OIDC_CLIENT: $OIDC_CLIENT
+      MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
+      MDB_OIDC_SCOPE: $OIDC_SCOPE
+      UVICORN_TIMEOUT_WORKER_HEALTHCHECK: 60 # Startup can take a while
+    ports:
+      - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
+    volumes:
+      - ${COMPOSE_PATH_ROOT:-./}/db:/srv/marpledb
+    depends_on:
+      - postgres
+      - minio
+    restart: unless-stopped
