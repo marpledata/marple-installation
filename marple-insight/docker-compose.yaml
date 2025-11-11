@@ -21,7 +21,7 @@ services:
       - POSTGRES_USER=$MARPLE_POSTGRES_USER
       - POSTGRES_PASSWORD=$MARPLE_POSTGRES_PW
       - POSTGRES_DB=$MARPLE_POSTGRES_DB_NAME
-    shm_size: $POSTGRES_SHM_SIZE
+    shm_size: 256mb
     volumes:
       - "$DOCKER_PATH_ROOT/db:/var/lib/postgresql/data"
     ports:
