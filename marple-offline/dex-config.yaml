@@ -11,17 +11,18 @@ issuer: http://marple.local:8080
 #
 # See the documentation (https://dexidp.io/docs/storage/) for further information.
 storage:
-  # type: memory
-  type: postgres
-  config:
-    host: postgres
-    port: 5432
-    database: marple
-    user: marple
-    password: secret
-    ssl:
-      mode: disable
+  type: memory
+#  type: postgres
+#  config:
+#    host: postgres
+#    port: 5432
+#    database: marple
+#    user: marple
+#    password: secret
+#    ssl:
+#      mode: disable
 # HTTP service configuration
+
 web:
   http: 0.0.0.0:8080
   allowedOrigins:
