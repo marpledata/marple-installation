@@ -24,6 +24,8 @@ Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) a
 
 ## 3. Start Everything
 
+Edit the `.env` file and set the required fields
+
 ```bash
 docker compose up -d
 docker compose ps
@@ -33,6 +35,7 @@ docker compose ps
 
 - Default Login: `admin@marpledata.com` / `password`
 - Marple Insight UI: `http://localhost`
+  - Upload a license file as provided by Marple
 - Marple DB API: `http://localhost:8000`
 - MinIO Console: `http://localhost:9001` (default `admin/password`)
 - Dex/Keycloak issuer: `http://marple.local:8080`
