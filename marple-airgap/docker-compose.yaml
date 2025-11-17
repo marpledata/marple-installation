@@ -52,11 +52,10 @@ services:
 
 #   dex:
 #     image: dexidp/dex:latest-alpine
-#     volumes:
-#       - ./dex-config.yaml:/etc/dex/config.yaml
 #     ports:
 #       - "8080:8080"
-#     restart: unless-stopped
+#     volumes:
+#       - ./dex-config.yaml:/etc/dex/config.yaml
 #     depends_on:
 #       postgres:
 #         condition: service_healthy
@@ -88,11 +87,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
     networks:
       default:
         aliases:
           - marple.local
-    restart: unless-stopped
 
   marple-insight:
     image: docker.marpledata.com/library/marple:${VERSION_INSIGHT:-connect-1.17.1}
