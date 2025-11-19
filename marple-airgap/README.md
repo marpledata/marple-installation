@@ -24,9 +24,10 @@ Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) a
 
 ## 3. Start Everything
 
-Edit the `.env` file and set the required fields
+Edit the `.env` file and set the required fields (only DEPLOYMENT is required)
 
 ```bash
+docker login docker.marpledata.com # log in with a robot account provided by Marple
 docker compose up -d
 docker compose ps
 ```
