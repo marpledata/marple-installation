@@ -21,7 +21,6 @@ services:
       - POSTGRES_USER=$MARPLE_POSTGRES_USER
       - POSTGRES_PASSWORD=$MARPLE_POSTGRES_PW
       - POSTGRES_DB=$MARPLE_POSTGRES_DB_NAME
-      - TS_TUNE_MEMORY=$MARPLE_POSTGRES_RAM # = 25% if 4 GB RAM
     shm_size: 256mb
     volumes:
       - "$DOCKER_PATH_ROOT/db:/var/lib/postgresql/data"

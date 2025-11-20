@@ -1,0 +1,111 @@
+# The base path of Dex and the external name of the OpenID Connect service.
+# This is the canonical URL that all clients MUST use to refer to Dex. If a
+# path is provided, Dex's HTTP service will listen at a non-root URL.
+issuer: http://marple.local:8080
+
+# The storage configuration determines where Dex stores its state.
+# Supported options include:
+#   - SQL flavors
+#   - key-value stores (eg. etcd)
+#   - Kubernetes Custom Resources
+#
+# See the documentation (https://dexidp.io/docs/storage/) for further information.
+storage:
+  type: memory
+#   type: postgres
+#   config:
+#     host: postgres
+#     port: 5432
+#     database: marple
+#     user: marple
+#     password: secret
+#     ssl:
+#       mode: disable
+# HTTP service configuration
+
+web:
+  http: 0.0.0.0:8080
+  allowedOrigins:
+    - "*"
+  headers:
+    Access-Control-Allow-Origin: "*"
+
+  # Uncomment to enable HTTPS endpoint.
+  # https: 127.0.0.1:5554
+  # tlsCert: /etc/dex/tls.crt
+  # tlsKey: /etc/dex/tls.key
+  # tlsMinVersion: 1.2
+  # tlsMaxVersion: 1.3
+# Telemetry configuration# gRPC API configuration
+
+# Uncomment this block to enable the gRPC API.
+# See the documentation (https://dexidp.io/docs/api/) for further information.
+# grpc:
+#   addr: 127.0.0.1:5557
+#   tlsCert: examples/grpc-client/server.crt
+#   tlsKey: examples/grpc-client/server.key
+#   tlsClientCA: examples/grpc-client/ca.crt
+
+# Expiration configuration for tokens, signing keys, etc.
+# expiry:
+#   deviceRequests: "5m"
+#   signingKeys: "6h"
+#   idTokens: "24h"
+#   refreshTokens:
+#     disableRotation: false
+#     reuseInterval: "3s"
+#     validIfNotUsedFor: "2160h" # 90 days
+#     absoluteLifetime: "3960h" # 165 days
+
+# OAuth2 configuration
+# oauth2:
+#   # use ["code", "token", "id_token"] to enable implicit flow for web-only clients
+#   responseTypes: [ "code" ] # also allowed are "token" and "id_token"
+#
+#   # By default, Dex will ask for approval to share data with application
+#   # (approval for sharing data from connected IdP to Dex is separate process on IdP)
+#   skipApprovalScreen: false
+#
+#   # If only one authentication method is enabled, the default behavior is to
+#   # go directly to it. For connected IdPs, this redirects the browser away
+#   # from application to upstream provider such as the Google login page
+#   alwaysShowLoginScreen: false
+#
+#   # Uncomment to use a specific connector for password grants
+#   passwordConnector: local
+
+# Static clients registered in Dex by default.
+#
+# Alternatively, clients may be added through the gRPC API.
+staticClients:
+  - id: marple-client
+    redirectURIs:
+      - "http://localhost"
+      - "http://localhost:8000/login"
+    name: "Marple Client"
+    public: true
+
+# Connectors are used to authenticate users against upstream identity providers.
+#
+# See the documentation (https://dexidp.io/docs/connectors/) for further information.
+# connectors: []
+
+# Enable the password database.
+#
+# It's a "virtual" connector (identity provider) that stores
+# login credentials in Dex's store.
+enablePasswordDB: true
+# Allow password grants with local users
+oauth2:
+  passwordConnector: local
+  responseTypes: ["code"]
+  skipApprovalScreen: true
+  alwaysShowLoginScreen: false
+
+# If this option isn't chosen users may be added through the gRPC API.
+# A static list of passwords for the password connector.
+staticPasswords:
+  - email: "admin@marpledata.com"
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "admin"
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
