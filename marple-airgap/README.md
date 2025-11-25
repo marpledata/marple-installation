@@ -20,7 +20,11 @@ sudo sh -c 'echo "127.0.0.1 marple.local" >> /etc/hosts'
 
 #### Windows
 
-Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) and add the same line.
+Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) and add at the bottom:
+
+```bash
+127.0.0.1 marple.local
+```
 
 ## 3. Start Everything
 
