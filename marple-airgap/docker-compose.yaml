@@ -34,7 +34,7 @@ services:
     volumes:
     - ${COMPOSE_PATH_ROOT}/minio:/data
     restart: unless-stopped
-  
+
   mc:
     depends_on:
       - minio
@@ -50,48 +50,48 @@ services:
       tail -f /dev/null
       "
 
-#   dex:
-#     image: dexidp/dex:latest-alpine
-#     ports:
-#       - "8080:8080"
-#     volumes:
-#       - ./dex-config.yaml:/etc/dex/config.yaml
-#     depends_on:
-#       postgres:
-#         condition: service_healthy
-#     command: ["dex", "serve", "/etc/dex/config.yaml"]
-#     restart: unless-stopped
-#     networks:
-#       default:
-#         aliases:
-#           - marple.local
-
-  keycloak:
-    command: 
-    - start-dev
-    - --import-realm
-    env_file:
-      - .env
-    environment:
-     KC_HOSTNAME: http://marple.local:8080
-     KC_HTTP_ENABLED: true
-     KC_DB: postgres
-     KC_DB_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
-     KC_DB_USERNAME: ${POSTGRES_USER}
-     KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-    image: quay.io/keycloak/keycloak:latest
+  dex:
+    image: dexidp/dex:latest-alpine
     ports:
-    - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
+      - "8080:8080"
     volumes:
-    - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
+      - ./dex-config.yaml:/etc/dex/config.yaml
     depends_on:
       postgres:
         condition: service_healthy
+    command: ["dex", "serve", "/etc/dex/config.yaml"]
     restart: unless-stopped
     networks:
       default:
         aliases:
           - marple.local
+
+  # keycloak:
+  #   command:
+  #   - start-dev
+  #   - --import-realm
+  #   env_file:
+  #     - .env
+  #   environment:
+  #    KC_HOSTNAME: http://marple.local:8080
+  #    KC_HTTP_ENABLED: true
+  #    KC_DB: postgres
+  #    KC_DB_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+  #    KC_DB_USERNAME: ${POSTGRES_USER}
+  #    KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+  #   image: quay.io/keycloak/keycloak:latest
+  #   ports:
+  #   - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
+  #   volumes:
+  #   - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   networks:
+  #     default:
+  #       aliases:
+  #         - marple.local
 
   marple-insight:
     image: docker.marpledata.com/library/marple:${VERSION_INSIGHT:-connect-1.17.1}
