@@ -94,7 +94,7 @@ services:
   #         - marple.local
 
   marple-insight:
-    image: docker.marpledata.com/library/marple:${VERSION_INSIGHT:-connect-1.17.1}
+    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-1.21.1}
     env_file:
       - .env
     environment:
@@ -119,7 +119,7 @@ services:
     restart: unless-stopped
 
   marple-db:
-    image: docker.marpledata.com/library/marpledb:${VERSION_DB:-rc-2.8.1}
+    image: docker.marpledata.com/library/marpledb:${VERSION_DB:-2.11.1}
     env_file:
       - .env
     environment:
