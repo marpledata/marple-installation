@@ -6,7 +6,7 @@ imagePullSecrets:
 
 # container
 image:
-  repository: docker.marpledata.com/library/marple
+  repository: docker.marpledata.com/library/marple-insight
   pullPolicy: IfNotPresent
   # tag will default to .Chart.AppVersion
 
