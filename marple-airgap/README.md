@@ -3,7 +3,11 @@
 ## 1. Requirements
 
 - Docker Engine ≥ 24
+   - Verify installation `docker --version`
+   - [Install](https://docs.docker.com/engine/install/) if missing
 - Docker Compose plugin ≥ 2.20
+   - Verify installation `docker compose version`
+   - [Install](https://docs.docker.com/compose/install/) if missing
 - 16 GB memory (32 GB if running Keycloak)
 - 64 GB free storage (containers + data)
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
@@ -66,8 +70,8 @@ The first time you run this, the local object storage (Garage) must be configure
       ```bash
       garage key create mdb-key
       ```
-      - [dev/.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
-      - [dev/.env](.env)/`AWS_SECRET_KEY` = `Secret key`
+      - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
+      - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
    - Allow the newly created key to manage the `mdb` bucket
       ```bash
       garage bucket allow --read --write --owner mdb --key mdb-key
@@ -78,7 +82,7 @@ The first time you run this, the local object storage (Garage) must be configure
       docker compose up -d
       ```
 
-## 4. Sign In
+## 4. Set up your workspaces
 
 - Default Login: `admin@marpledata.com` / `password`
 - Marple DB API: `http://localhost:8000`
