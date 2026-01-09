@@ -36,6 +36,38 @@ docker compose up -d
 docker compose ps
 ```
 
+The first time you run this, the local object storage (Garage) must be configured:
+   - Create a Temporary alias for running commands in the garage container:
+      ```bash
+      alias garage="docker exec -ti marple-db-dev-garage-1 /garage"
+      ```
+   - Get the id of this garage node to use in the next command:
+      ```bash
+      garage status
+      ```
+   - Create a cluster layout, set the maximum storage capacity (in GB), take the node id from the previous command:
+      ```bash
+      garage layout assign --zone local --capacity <CAPACITY>G <NODE ID>
+      ```
+   - Apply the layout:
+      ```bash
+      garage layout apply --version 1
+      ```
+   - Create an `mdb` bucket:
+      ```bash
+      garage bucket create mdb
+      ```
+   - Generate a key and copy to Key ID & Secret key to [.env](.env)
+      ```bash
+      garage key create mdb-key
+      ```
+      - [dev/.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
+      - [dev/.env](.env)/`AWS_SECRET_KEY` = `Secret key`
+   - Restart the `marple-db` container to use the correct env variables:
+      ```bash
+      docker compose restart marple-db
+      ```
+
 ## 4. Sign In
 
 - Default Login: `admin@marpledata.com` / `password`
