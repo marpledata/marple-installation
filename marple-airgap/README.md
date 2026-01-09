@@ -28,7 +28,12 @@ Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) a
 
 ## 3. Start Everything
 
-Edit the `.env` file and set the required fields (only DEPLOYMENT is required)
+Edit the `.env` file and set the required fields:
+- `DEPLOYMENT`
+- `AWS_ACCESS_KEY` This will be generated later
+- `AWS_SECRET_KEY` This will be generated later
+- Other variables are optional
+
 
 ```bash
 docker login docker.marpledata.com # log in with a robot account provided by Marple
@@ -63,9 +68,14 @@ The first time you run this, the local object storage (Garage) must be configure
       ```
       - [dev/.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
       - [dev/.env](.env)/`AWS_SECRET_KEY` = `Secret key`
-   - Restart the `marple-db` container to use the correct env variables:
+   - Allow the newly created key to manage the `mdb` bucket
       ```bash
-      docker compose restart marple-db
+      garage bucket allow --read --write --owner mdb --key mdb-key
+      ```
+   - Restart the containers to use the correct env variables:
+      ```bash
+      docker compose down
+      docker compose up -d
       ```
 
 ## 4. Sign In
