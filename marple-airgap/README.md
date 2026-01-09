@@ -77,7 +77,6 @@ The first time you run this, the local object storage (Garage) must be configure
   - Upload a license file as provided by Marple
   - Upload `connection.json`
   - Edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8000/api/v1`
-- MinIO Console: `http://localhost:9001` (default `admin/password`)
 - Dex/Keycloak issuer: `http://marple.local:8080`
 
 ## 5. Configuration
