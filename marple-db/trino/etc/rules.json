@@ -1,0 +1,8 @@
+{
+    "catalogs": [
+        {
+            "user": "^admin@marpledata.com$",
+            "allow": true
+        }
+    ]
+}
