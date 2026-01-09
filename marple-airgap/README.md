@@ -92,6 +92,8 @@ The first time you run this, the local object storage (Garage) must be configure
   - Upload `connection.json`
   - Edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8000/api/v1`
 - Dex/Keycloak issuer: `http://marple.local:8080`
+- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
+- Upload a file and verify you can visualise it in Inisght
 
 ## 5. Configuration
 
