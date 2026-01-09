@@ -39,7 +39,7 @@ docker compose ps
 The first time you run this, the local object storage (Garage) must be configured:
    - Create a Temporary alias for running commands in the garage container:
       ```bash
-      alias garage="docker exec -ti marple-db-dev-garage-1 /garage"
+      alias garage="docker exec -ti marple-airgap-garage-1 /garage"
       ```
    - Get the id of this garage node to use in the next command:
       ```bash
