@@ -11,17 +11,11 @@ services:
     restart: unless-stopped
 
   trino:
-    # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
     env_file:
       - ./trino/.env
     ports:
       - "$TRINO_PORT:8080"
-    environment:
-      CATALOG_MANAGEMENT: dynamic
-    depends_on:
-      postgres:
-        condition: service_healthy
     volumes:
       - ./trino/etc:/etc/trino
       - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
