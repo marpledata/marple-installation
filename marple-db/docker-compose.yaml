@@ -16,7 +16,7 @@ services:
     env_file:
       - ./trino/.env
     ports:
-      - "$TRINO_PORT:8080"
+      - "$WEB_TRINO_PORT:8080"
     volumes:
       - ./trino/etc:/etc/trino
       - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
