@@ -8,4 +8,16 @@ services:
       - $MDB_PORT:80 # first port is host
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
+      - ./trino/etc/rules.json:./mdb/rules.json
+    restart: unless-stopped
+
+  trino:
+    image: trinodb/trino:479
+    env_file:
+      - ./trino/.env
+    ports:
+      - "$TRINO_PORT:8080"
+    volumes:
+      - ./trino/etc:/etc/trino
+      - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
     restart: unless-stopped
