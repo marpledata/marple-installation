@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
 
   trino:
+    container_name: $TRINO_CONTAINER_NAME
     image: trinodb/trino:479
     env_file:
       - ./trino/.env
