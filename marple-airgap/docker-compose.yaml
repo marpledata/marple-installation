@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
 
   dex:
-    image: dexidp/dex:latest-alpine
+    image: dexidp/dex:v2.44.0-alpine
     container_name: marple-dex
     ports:
       - "8080:8080"
