@@ -141,5 +141,5 @@ services:
       CATALOG_MANAGEMENT: dynamic
     volumes:
       # Password authenticator config
-      - ./trino/config.properties:/etc/trino/config.properties:ro
+      - ../marple-db/trino/config.properties:/etc/trino/config.properties:ro
     restart: unless-stopped
