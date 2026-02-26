@@ -1,5 +1,6 @@
 services:
   postgres:
+    container_name: marple-postgres
     env_file:
     - .env
     healthcheck:
@@ -78,6 +79,7 @@ services:
   #         - marple.local
 
   marple-insight:
+    container_name: marple-insight
     image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-1.21.1}
     env_file:
       - .env
@@ -103,6 +105,7 @@ services:
     restart: unless-stopped
 
   marple-db:
+    container_name: marple-db
     image: docker.marpledata.com/library/marpledb:${VERSION_DB:-2.11.1}
     env_file:
       - .env
@@ -125,4 +128,18 @@ services:
     depends_on:
       - postgres
       - garage
+    restart: unless-stopped
+
+  
+  trino:
+    container_name: trino
+    # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
+    image: trinodb/trino:479
+    ports:
+      - "9003:8080"
+    environment:
+      CATALOG_MANAGEMENT: dynamic
+    volumes:
+      # Password authenticator config
+      - ./trino/config.properties:/etc/trino/config.properties:ro
     restart: unless-stopped
