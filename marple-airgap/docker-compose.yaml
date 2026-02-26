@@ -38,6 +38,7 @@ services:
 
   dex:
     image: dexidp/dex:latest-alpine
+    container_name: marple-dex
     ports:
       - "8080:8080"
     volumes:
@@ -133,7 +134,7 @@ services:
 
   
   trino:
-    container_name: trino
+    container_name: marple-trino
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
     ports:
