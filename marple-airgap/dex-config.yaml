@@ -1,7 +1,7 @@
 # The base path of Dex and the external name of the OpenID Connect service.
 # This is the canonical URL that all clients MUST use to refer to Dex. If a
 # path is provided, Dex's HTTP service will listen at a non-root URL.
-issuer: http://marple.local:8080
+issuer: http://3.70.224.63:8080
 
 # The storage configuration determines where Dex stores its state.
 # Supported options include:
