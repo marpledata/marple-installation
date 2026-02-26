@@ -20,6 +20,7 @@ services:
 
   garage:
     image: dxflrs/garage:v2.1.0
+    container_name: marple-garage
     ports:
       - "3900:3900" # S3 API
       - "3903:3903" # Admin API
