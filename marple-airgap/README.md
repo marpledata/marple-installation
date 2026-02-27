@@ -12,7 +12,10 @@
 - 64 GB free storage (containers + data)
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
 
-## 2. Point `marple.local` to localhost
+## 2. Fix IdP network for local setup
+
+Point `marple.local` to localhost - only in case you have a local deployment.
+Otherwise, fix the .env (and dex/keycloack config) to wire to the IdP Issuer correctly.
 
 Add `127.0.0.1 marple.local` to the hosts file:
 
@@ -36,6 +39,7 @@ Edit the `.env` file and set the required fields:
 - `DEPLOYMENT`
 - `AWS_ACCESS_KEY` This will be generated later
 - `AWS_SECRET_KEY` This will be generated later
+- Check all variables flagged with "TODO"
 - Other variables are optional
 
 
@@ -90,7 +94,7 @@ The first time you run this, the local object storage (Garage) must be configure
 - Marple Insight UI: `http://localhost`
   - Upload a license file as provided by Marple
   - Upload `connection.json`
-  - Edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8000/api/v1`
+  - Edit MarpleDB API URL to use the docker host IP: `<insight origin>/api/v1` (for localhost: `http://172.17.0.1:8000/api/v1`)
 - Dex/Keycloak issuer: `http://marple.local:8080`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
