@@ -48,6 +48,10 @@ services:
         condition: service_healthy
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - marple.local
 
   # keycloak:
   #   command:
@@ -141,3 +145,7 @@ services:
       # Password authenticator config
       - ./trino/config.properties:/etc/trino/config.properties:ro
     restart: unless-stopped
+    networks:
+      default:
+        aliases:
+          - marple.local
