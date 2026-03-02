@@ -26,6 +26,7 @@
 - `snap install --classic certbot`
 - `sudo /snap/bin/certbot --nginx`
 - `chmod -R 777 /path/to/trino/` (for trino folder in `/marple-on-prem`)
+- Make sure that `$DOCKER_PATH_ROOT/swap/trino` has `+rwx`
 
 ## 3. Start Everything
 
