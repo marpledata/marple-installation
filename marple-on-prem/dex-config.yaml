@@ -1,7 +1,7 @@
 # The base path of Dex and the external name of the OpenID Connect service.
 # This is the canonical URL that all clients MUST use to refer to Dex. If a
 # path is provided, Dex's HTTP service will listen at a non-root URL.
-issuer: http://marple.local:8080 # TODO <issuer url>
+issuer: https://test.dex.marpledata.com # TODO <issuer url>
 
 # The storage configuration determines where Dex stores its state.
 # Supported options include:
@@ -26,7 +26,7 @@ storage:
 web:
   http: 0.0.0.0:8080
   allowedOrigins:
-    - "*"
+    - "*" # TODO KATE?
   headers:
     Access-Control-Allow-Origin: "*"
 
@@ -80,8 +80,8 @@ web:
 staticClients:
   - id: marple-client
     redirectURIs:
-      - "http://marple.local" # TODO, <insight origin url>
-      - "http://marple.local:8000/login" # TODO, <db origin url>/login
+      - "https://test.insight.marpledata.com" # TODO, <insight origin url>
+      - "https://test.db.marpledata.com/login" # TODO, <db origin url>/login
     name: "Marple Client"
     public: true
 
