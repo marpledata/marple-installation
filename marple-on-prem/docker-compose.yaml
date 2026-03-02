@@ -48,10 +48,6 @@ services:
         condition: service_healthy
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     restart: unless-stopped
-    networks:
-      default:
-        aliases:
-          - marple.local
 
   # keycloak:
   #   command:
@@ -139,13 +135,11 @@ services:
     image: trinodb/trino:479
     ports:
       - ${COMPOSE_PORT_TRINO:-9003}:8080
+    env_file:
+      - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
     volumes:
       - ./trino/etc:/etc/trino
       - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
     restart: unless-stopped
-    networks:
-      default:
-        aliases:
-          - marple.local
