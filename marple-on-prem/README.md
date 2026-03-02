@@ -1,4 +1,4 @@
-# Marple Airgap Quickstart
+# Marple On Prem Quickstart
 
 ## 1. Requirements
 
@@ -12,23 +12,22 @@
 - 64 GB free storage (containers + data)
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
 
-## 2. Point `marple.local` to localhost
+## 2. Fix DNS and nginx
 
-Add `127.0.0.1 marple.local` to the hosts file:
-
-#### Unix/MacOS
-
-```bash
-sudo sh -c 'echo "127.0.0.1 marple.local" >> /etc/hosts'
-```
-
-#### Windows
-
-Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) and add at the bottom:
-
-```bash
-127.0.0.1 marple.local
-```
+- Set up DNS entry for 
+   - Insight
+   - DB
+   - Trino
+   - Dex/Keycloack (optional, in case you don't have your own IdP)
+- Adapt `marple.conf` to the DNS new entries
+- Move `marple.conf` to `/etc/nginx/sites-enabled/marple.conf`
+- `systemctl enable nginx`
+- `systemctl start nginx`
+- `snap install --classic certbot`
+- `sudo /snap/bin/certbot --nginx`
+- `chmod -R 777 /path/to/trino/` (for trino folder in `/marple-on-prem`)
+- Make sure that `$DOCKER_PATH_ROOT/swap/trino` has `+rwx`
+- `chown -R ubuntu:ubuntu {COMPOSE_PATH_ROOT}` (fill in value of COMPOSE_PATH_ROOT and optionally change user)
 
 ## 3. Start Everything
 
@@ -83,17 +82,20 @@ The first time you run this, the local object storage (Garage) must be configure
       docker compose up -d
       ```
 
+### Configure dex config
+Optional, in case you don't link to your own IdP.
+Change the variables with # TODO in the dex-config.yaml file.
+
 ## 4. Set up your workspaces
 
 - Default Login: `admin@marpledata.com` / `password`
-- Marple DB API: `http://localhost:8000`
-  - Copy `connection.json` to Marple Insight
-- Marple Insight UI: `http://localhost`
-  - Upload a license file as provided by Marple
+- Go to Marple DB
+  - Settings -> Marple Insight
+  - Fill in `Insight URL` + `Save`
+  - Download `connection.json`
+- Go to Marple Insight
+  - Settings -> Connection
   - Upload `connection.json`
-  - Edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8000/api/v1`
-- Dex/Keycloak issuer: `http://marple.local:8080`
-- Trino: `http://localhost:9003`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
 
@@ -106,6 +108,5 @@ The first time you run this, the local object storage (Garage) must be configure
 
 ## 6. Troubleshooting
 
-- Always browse to `localhost`, and not `marple.local`
 - `docker compose logs SERVICE` to inspect startup issues
 - Use a `.wslconfig` file to configure amount of RAM (Windows)

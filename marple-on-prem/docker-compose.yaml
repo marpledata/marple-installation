@@ -40,7 +40,7 @@ services:
     image: dexidp/dex:v2.44.0-alpine
     container_name: marple-dex
     ports:
-      - "8080:8080"
+      - ${COMPOSE_PORT_IDP:-8080}:8080
     volumes:
       - ./dex-config.yaml:/etc/dex/config.yaml
     depends_on:
@@ -48,10 +48,6 @@ services:
         condition: service_healthy
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     restart: unless-stopped
-    networks:
-      default:
-        aliases:
-          - marple.local
 
   # keycloak:
   #   command:
@@ -60,7 +56,7 @@ services:
   #   env_file:
   #     - .env
   #   environment:
-  #    KC_HOSTNAME: http://marple.local:8080
+  #    KC_HOSTNAME: https://test.keycloack.marpledata.com # TODO
   #    KC_HTTP_ENABLED: true
   #    KC_DB: postgres
   #    KC_DB_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
@@ -75,10 +71,6 @@ services:
   #     postgres:
   #       condition: service_healthy
   #   restart: unless-stopped
-  #   networks:
-  #     default:
-  #       aliases:
-  #         - marple.local
 
   marple-insight:
     container_name: marple-insight
@@ -99,7 +91,7 @@ services:
       MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
       MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
     ports:
-      - ${COMPOSE_PORT_MARPLE:-80}:80 # first port is host
+      - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
     depends_on:
@@ -127,6 +119,7 @@ services:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+      - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
     depends_on:
       - postgres
       - garage
@@ -138,10 +131,13 @@ services:
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
     ports:
-      - "9003:8080"
+      - ${COMPOSE_PORT_TRINO:-9003}:8080
+    env_file:
+      - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
     volumes:
-      # Password authenticator config
-      - ./trino/config.properties:/etc/trino/config.properties:ro
+      - ./trino/etc:/etc/trino
+      - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
+      - ${COMPOSE_PATH_ROOT}/swap/trino:/data/spill
     restart: unless-stopped

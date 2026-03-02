@@ -1,0 +1,15 @@
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+
+db_engine="sqlite"
+
+replication_factor = 1 # Essential for single-node dev
+
+# Internal communication (not used much in single-node, but required)
+rpc_bind_addr = "[::]:3901"
+rpc_secret = "8f18d0ede4d927f5961568f43ec87b07281b7a628cd1433132e7a1e969278ce0"  # Not relevant in single node mode but need something (created with `openssl rand -hex 32`)
+
+[s3_api]
+s3_region = "eu-central-1"
+api_bind_addr = "[::]:3900"
