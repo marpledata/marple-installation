@@ -142,4 +142,5 @@ services:
     volumes:
       - ./trino/etc:/etc/trino
       - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
+      - $DOCKER_PATH_ROOT/swap/trino:/data/spill
     restart: unless-stopped
