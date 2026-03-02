@@ -1,0 +1,58 @@
+{
+    "catalogs": [
+        {
+            "user": "admin@marpledata.com",
+            "catalog": ".*",
+            "allow": "owner"
+        },
+        {
+            "catalog": "system",
+            "allow": "none"
+        }
+    ],
+    "system_session_properties": [
+        {
+            "user": "admin@marpledata.com",
+            "allow": true
+        },
+        {
+            "allow": false
+        }
+    ],
+    "catalog_session_properties": [
+        {
+            "user": "admin@marpledata.com",
+            "allow": true
+        },
+        {
+            "allow": false
+        }
+    ],
+    "queries": [
+        {
+            "user": "admin@marpledata.com",
+            "allow": [
+                "execute",
+                "view",
+                "kill"
+            ]
+        },
+        {
+            "allow": [
+                "execute"
+            ]
+        }
+    ],
+    "system_information": [
+        {
+            "user": "admin@marpledata.com",
+            "allow": [
+                "read",
+                "write"
+            ]
+        },
+        {
+            "allow": []
+        }
+    ]
+}
