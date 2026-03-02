@@ -103,7 +103,7 @@ services:
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
     depends_on:
-      - marple-postgres
+      - postgres
     restart: unless-stopped
 
   marple-db:
