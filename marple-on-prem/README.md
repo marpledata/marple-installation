@@ -24,6 +24,7 @@
 - `systemctl enable nginx`
 - `systemctl start nginx`
 - `snap install --classic certbot`
+- `sudo /snap/bin/certbot --nginx`
 - `chmod -R 777 /path/to/trino/` (for trino folder in `/marple-on-prem`)
 
 ## 3. Start Everything
@@ -82,13 +83,12 @@ The first time you run this, the local object storage (Garage) must be configure
 ## 4. Set up your workspaces
 
 - Default Login: `admin@marpledata.com` / `password`
-- Marple DB API: `http://localhost:8000`
+- Go to Marple DB
   - Copy `connection.json` to Marple Insight
-- Marple Insight UI: `http://localhost`
+- Go to Marple Insight
   - Upload a license file as provided by Marple
   - Upload `connection.json`
-  - Edit MarpleDB API URL to use the docker host IP: `<insight origin>/api/v1` (for localhost: `http://172.17.0.1:8000/api/v1`)
-- Dex/Keycloak issuer: `http://marple.local:8080`
+  - Edit MarpleDB API URL to use the docker host IP: `<insight origin>/api/v1`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
 
