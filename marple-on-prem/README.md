@@ -90,8 +90,11 @@ Change the variables with # TODO in the dex-config.yaml file.
 
 - Default Login: `admin@marpledata.com` / `password`
 - Go to Marple DB
-  - Copy `connection.json` to Marple Insight
+  - Settings -> Marple Insight
+  - Fill in `Insight URL` + `Save`
+  - Download `connection.json`
 - Go to Marple Insight
+  - Settings -> Connection
   - Upload `connection.json`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
