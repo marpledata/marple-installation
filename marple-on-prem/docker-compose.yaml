@@ -142,8 +142,8 @@ services:
     environment:
       CATALOG_MANAGEMENT: dynamic
     volumes:
-      # Password authenticator config
-      - ./trino/etc/config.properties:/etc/trino/config.properties:ro
+      - ./trino/etc:/etc/trino
+      - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
     restart: unless-stopped
     networks:
       default:
