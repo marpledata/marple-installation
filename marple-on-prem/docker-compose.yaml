@@ -40,7 +40,7 @@ services:
     image: dexidp/dex:v2.44.0-alpine
     container_name: marple-dex
     ports:
-      - "8080:8080"
+      - ${COMPOSE_PORT_IDP:-8080}:8080
     volumes:
       - ./dex-config.yaml:/etc/dex/config.yaml
     depends_on:
@@ -99,7 +99,7 @@ services:
       MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
       MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
     ports:
-      - ${COMPOSE_PORT_MARPLE:-80}:80 # first port is host
+      - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
     depends_on:
@@ -138,7 +138,7 @@ services:
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
     ports:
-      - "9003:8080"
+      - ${COMPOSE_PORT_TRINO:-9003}:8080
     environment:
       CATALOG_MANAGEMENT: dynamic
     volumes:
