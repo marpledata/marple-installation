@@ -104,6 +104,5 @@ Change the variables with # TODO in the dex-config.yaml file.
 
 ## 6. Troubleshooting
 
-- Always browse to `localhost`, and not `marple.local`
 - `docker compose logs SERVICE` to inspect startup issues
 - Use a `.wslconfig` file to configure amount of RAM (Windows)
