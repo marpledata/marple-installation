@@ -80,6 +80,10 @@ The first time you run this, the local object storage (Garage) must be configure
       docker compose up -d
       ```
 
+### Configure dex config
+Optional, in case you don't link to your own IdP.
+Change the variables with # TODO in the dex-config.yaml file.
+
 ## 4. Set up your workspaces
 
 - Default Login: `admin@marpledata.com` / `password`
