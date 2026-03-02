@@ -27,6 +27,7 @@
 - `sudo /snap/bin/certbot --nginx`
 - `chmod -R 777 /path/to/trino/` (for trino folder in `/marple-on-prem`)
 - Make sure that `$DOCKER_PATH_ROOT/swap/trino` has `+rwx`
+- `chown -R ubuntu:ubuntu {COMPOSE_PATH_ROOT}` (fill in value of COMPOSE_PATH_ROOT and optionally change user)
 
 ## 3. Start Everything
 
