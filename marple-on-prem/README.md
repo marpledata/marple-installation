@@ -86,7 +86,6 @@ The first time you run this, the local object storage (Garage) must be configure
 - Go to Marple DB
   - Copy `connection.json` to Marple Insight
 - Go to Marple Insight
-  - Upload a license file as provided by Marple
   - Upload `connection.json`
   - Edit MarpleDB API URL to use the docker host IP: `<insight origin>/api/v1`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
