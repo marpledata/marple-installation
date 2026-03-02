@@ -21,8 +21,10 @@
    - Dex/Keycloack (optional, in case you don't have your own IdP)
 - Adapt `marple.conf` to the DNS new entries
 - Move `marple.conf` to `/etc/nginx/sites-enabled/marple.conf`
-- systemctl enable nginx
-- systemctl start nginx
+- `systemctl enable nginx`
+- `systemctl start nginx`
+- `snap install --classic certbot`
+- `chmod -R 777 /path/to/trino/` (for trino folder in `/marple-on-prem`)
 
 ## 3. Start Everything
 
