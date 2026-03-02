@@ -1,4 +1,4 @@
-# Marple Airgap Quickstart
+# Marple On Prem Quickstart
 
 ## 1. Requirements
 
