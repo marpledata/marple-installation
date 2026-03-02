@@ -123,6 +123,7 @@ services:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+      - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
     depends_on:
       - postgres
       - garage
