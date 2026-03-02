@@ -108,7 +108,7 @@ services:
 
   marple-db:
     container_name: marple-db
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-2.11.1}
+    image: docker.marpledata.com/library/marpledb:${VERSION_DB:-2.11.1}
     env_file:
       - .env
     environment:
