@@ -93,7 +93,6 @@ Change the variables with # TODO in the dex-config.yaml file.
   - Copy `connection.json` to Marple Insight
 - Go to Marple Insight
   - Upload `connection.json`
-  - Edit MarpleDB API URL to use the docker host IP: `<insight origin>/api/v1`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
 
