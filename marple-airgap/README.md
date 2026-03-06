@@ -1,5 +1,8 @@
 # Marple Airgap Quickstart
 
+Use Marple Airgap in case you want to set up Marple without IdP.
+Want to set up your own IdP on Marple? Follow the readme of marple-on-prem.
+
 ## 1. Requirements
 
 - Docker Engine ≥ 24
@@ -81,6 +84,13 @@ The first time you run this, the local object storage (Garage) must be configure
 - Trino: `http://localhost:8080`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
+
+## 4. Configure DNS and nginx (Optional)
+
+In case you like to set up DNS + nginx:
+
+- Follow DNS setup in `marple-on-prem/README.md`
+- Remove the IdP parts from `marple.conf`, since those are redundant in an airgapped setup.
 
 ## 5. Configuration
 
