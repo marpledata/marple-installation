@@ -1,5 +1,5 @@
 services:
-  postgres:
+  marple-postgres:
     container_name: marple-postgres
     env_file:
     - .env
@@ -18,7 +18,7 @@ services:
     - ${COMPOSE_PATH_ROOT}/postgres:/var/lib/postgresql
     restart: unless-stopped
 
-  garage:
+  marple-garage:
     image: dxflrs/garage:v2.1.0
     container_name: marple-garage
     ports:
@@ -36,49 +36,6 @@ services:
       timeout: 5s
     restart: unless-stopped
 
-  dex:
-    image: dexidp/dex:v2.44.0-alpine
-    container_name: marple-dex
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./dex-config.yaml:/etc/dex/config.yaml
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: ["dex", "serve", "/etc/dex/config.yaml"]
-    restart: unless-stopped
-    networks:
-      default:
-        aliases:
-          - marple.local
-
-  # keycloak:
-  #   command:
-  #   - start-dev
-  #   - --import-realm
-  #   env_file:
-  #     - .env
-  #   environment:
-  #    KC_HOSTNAME: http://marple.local:8080
-  #    KC_HTTP_ENABLED: true
-  #    KC_DB: postgres
-  #    KC_DB_URL: jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}
-  #    KC_DB_USERNAME: ${POSTGRES_USER}
-  #    KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-  #   image: quay.io/keycloak/keycloak:latest
-  #   ports:
-  #   - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
-  #   volumes:
-  #   - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   restart: unless-stopped
-  #   networks:
-  #     default:
-  #       aliases:
-  #         - marple.local
 
   marple-insight:
     container_name: marple-insight
@@ -92,18 +49,13 @@ services:
       MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
       MARPLE_POSTGRES_USER: $POSTGRES_USER
       MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
-      MARPLE_AUTH_PROVIDER: OAUTH
-      MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
-      MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
-      MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
-      MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
-      MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+      MARPLE_IDP_PROVIDER: $IDP_PROVIDER
     ports:
       - ${COMPOSE_PORT_MARPLE:-80}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
     depends_on:
-      - postgres
+      - marple-postgres
     restart: unless-stopped
 
   marple-db:
@@ -118,22 +70,19 @@ services:
       MDB_DB_NAME: $POSTGRES_DB
       MDB_DB_USER: $POSTGRES_USER
       MDB_DB_PASSWORD: $POSTGRES_PASSWORD
-      MDB_OIDC_DOMAIN: $OIDC_DOMAIN
-      MDB_OIDC_CLIENT: $OIDC_CLIENT
-      MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
-      MDB_OIDC_SCOPE: $OIDC_SCOPE
+      MDB_IDP_PROVIDER: $IDP_PROVIDER
       UVICORN_TIMEOUT_WORKER_HEALTHCHECK: 60 # Startup can take a while
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
     depends_on:
-      - postgres
-      - garage
+      - marple-postgres
+      - marple-garage
     restart: unless-stopped
 
   
-  trino:
+  marple-trino:
     container_name: marple-trino
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
