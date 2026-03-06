@@ -72,13 +72,13 @@ The first time you run this, the local object storage (Garage) must be configure
 ## 3. Set up your workspaces
 
 - Default Login: `admin@marpledata.com` / `password`
-- Marple DB API: `http://localhost:8000`
+- Marple DB API: `http://localhost:8001`
   - Copy `connection.json` to Marple Insight
-- Marple Insight UI: `http://localhost`
+- Marple Insight UI: `http://localhost:8000`
   - Upload a license file as provided by Marple (if licensing server is disabled)
   - Upload `connection.json`
-  - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8000/api/v1`
-- Trino: `http://localhost:9003`
+  - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8001/api/v1`
+- Trino: `http://localhost:8080`
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - Upload a file and verify you can visualise it in Inisght
 

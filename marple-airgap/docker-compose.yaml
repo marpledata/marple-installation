@@ -51,7 +51,7 @@ services:
       MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
       MARPLE_IDP_PROVIDER: $IDP_PROVIDER
     ports:
-      - ${COMPOSE_PORT_MARPLE:-80}:80 # first port is host
+      - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
     depends_on:
@@ -87,7 +87,7 @@ services:
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
     ports:
-      - "9003:8080"
+      - ${COMPOSE_PORT_TRINO:-9003}:8080
     environment:
       CATALOG_MANAGEMENT: dynamic
     volumes:
