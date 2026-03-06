@@ -75,7 +75,7 @@ The first time you run this, the local object storage (Garage) must be configure
 - Marple DB API: `http://localhost:8000`
   - Copy `connection.json` to Marple Insight
 - Marple Insight UI: `http://localhost`
-  - Upload a license file as provided by Marple
+  - Upload a license file as provided by Marple (if licensing server is disabled)
   - Upload `connection.json`
   - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8000/api/v1`
 - Trino: `http://localhost:9003`
