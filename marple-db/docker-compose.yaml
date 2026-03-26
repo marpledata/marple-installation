@@ -9,6 +9,7 @@ services:
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
       - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
+      - .usage-automation.json:/etc/marple/.usage-automation.json
     restart: unless-stopped
 
   trino:
