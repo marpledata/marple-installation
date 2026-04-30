@@ -74,7 +74,7 @@ The first time you run this, the local object storage (Garage) must be configure
 
 ## 3. Set up your workspaces
 
-- Default Login: `admin@marpledata.com` / `password`
+- Default Login: chose your account name
 - Marple DB API: `http://localhost:8001`
   - Copy `connection.json` to Marple Insight
 - Marple Insight UI: `http://localhost:8000`
