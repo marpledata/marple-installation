@@ -76,6 +76,7 @@ The first time you run this, the local object storage (Garage) must be configure
 
 - Default Login: chose your account name
 - Marple DB API: `http://localhost:8001`
+  - Upload a license file as provided by Marple (if licensing server is disabled)
   - Copy `connection.json` to Marple Insight
 - Marple Insight UI: `http://localhost:8000`
   - Upload a license file as provided by Marple (if licensing server is disabled)
