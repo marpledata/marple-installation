@@ -25,6 +25,8 @@ Edit the `.env` file and set the required fields:
 - Check all variables flagged with "TODO"
 - Other variables are optional
 
+Pull and start the docker containers by executing
+
 ```bash
 docker login docker.marpledata.com # log in with a robot account provided by Marple
 docker compose up -d
@@ -54,14 +56,12 @@ The first time you run this, the local object storage (Garage) must be configure
   garage bucket create mdb
   ```
 - Generate a key and copy to Key ID & Secret key to [.env](.env)
-
   ```bash
   garage key create mdb-key
   ```
 
   - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
   - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
-
 - Allow the newly created key to manage the `mdb` bucket
   ```bash
   garage bucket allow --read --write --owner mdb --key mdb-key
