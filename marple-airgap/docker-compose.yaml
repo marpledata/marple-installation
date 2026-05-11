@@ -2,20 +2,20 @@ services:
   marple-postgres:
     container_name: marple-postgres
     env_file:
-    - .env
+      - .env
     healthcheck:
       interval: 30s
       retries: 5
       start_period: 20s
       test:
-      - CMD-SHELL
-      - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
       timeout: 5s
     image: docker.io/library/postgres:18-alpine
     ports:
-    - ${POSTGRES_PORT:-5432}:5432
+      - ${POSTGRES_PORT:-5432}:5432
     volumes:
-    - ${COMPOSE_PATH_ROOT}/postgres:/var/lib/postgresql
+      - ${COMPOSE_PATH_ROOT}/postgres:/var/lib/postgresql
     restart: unless-stopped
 
   marple-garage:
@@ -25,9 +25,9 @@ services:
       - "3900:3900" # S3 API
       - "3903:3903" # Admin API
     volumes:
-    - ./garage.toml:/etc/garage.toml
-    - ${COMPOSE_PATH_ROOT}/garage/data:/var/lib/garage/data
-    - ${COMPOSE_PATH_ROOT}/garage/meta:/var/lib/garage/meta
+      - ./garage.toml:/etc/garage.toml
+      - ${COMPOSE_PATH_ROOT}/garage/data:/var/lib/garage/data
+      - ${COMPOSE_PATH_ROOT}/garage/meta:/var/lib/garage/meta
     healthcheck:
       interval: 30s
       retries: 5
@@ -35,7 +35,6 @@ services:
       test: ["CMD", "/garage", "status"]
       timeout: 5s
     restart: unless-stopped
-
 
   marple-insight:
     container_name: marple-insight
@@ -49,7 +48,12 @@ services:
       MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
       MARPLE_POSTGRES_USER: $POSTGRES_USER
       MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
-      MARPLE_IDP_PROVIDER: $IDP_PROVIDER
+      MARPLE_AUTH_PROVIDER: $IDP_PROVIDER
+      MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
+      MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
+      MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
+      MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
+      MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
     ports:
       - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
     volumes:
@@ -71,6 +75,10 @@ services:
       MDB_DB_USER: $POSTGRES_USER
       MDB_DB_PASSWORD: $POSTGRES_PASSWORD
       MDB_IDP_PROVIDER: $IDP_PROVIDER
+      MDB_OIDC_DOMAIN: $OIDC_DOMAIN
+      MDB_OIDC_CLIENT: $OIDC_CLIENT
+      MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
+      MDB_OIDC_SCOPE: $OIDC_SCOPE
       UVICORN_TIMEOUT_WORKER_HEALTHCHECK: 60 # Startup can take a while
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
@@ -81,7 +89,6 @@ services:
       - marple-garage
     restart: unless-stopped
 
-  
   marple-trino:
     container_name: marple-trino
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
