@@ -127,6 +127,7 @@ services:
     depends_on:
       - postgres
       - garage
+      - trino
     restart: unless-stopped
 
   trino:

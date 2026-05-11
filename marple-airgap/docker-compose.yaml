@@ -90,6 +90,7 @@ services:
     depends_on:
       - marple-postgres
       - marple-garage
+      - marple-trino
     restart: unless-stopped
 
   marple-trino:
