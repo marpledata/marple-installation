@@ -15,9 +15,9 @@ Want to set up your own IdP on Marple? Follow the readme of marple-on-prem.
 - 64 GB free storage (containers + data)
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
 
-## 2. Start Everything
+## 2. Start Docker Compose Services
 
-Edit the `.env` file and set the required fields:
+Rename the `.env.example` file to `.env` and set the required fields:
 
 - `DEPLOYMENT`
 - `AWS_ACCESS_KEY` This will be generated later
@@ -33,7 +33,11 @@ docker compose up -d
 docker compose ps
 ```
 
-The first time you run this, the local object storage (Garage) must be configured:
+### a. Garage (Blob Storage) Configuration
+
+_If using your own Blob storage, this part can be skipped_
+
+If using the local object storage (Garage), you'll need to configure it when running Marple for the first time.
 
 - Create a Temporary alias for running commands in the garage container:
   ```bash
@@ -56,12 +60,14 @@ The first time you run this, the local object storage (Garage) must be configure
   garage bucket create mdb
   ```
 - Generate a key and copy to Key ID & Secret key to [.env](.env)
+
   ```bash
   garage key create mdb-key
   ```
 
   - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
   - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
+
 - Allow the newly created key to manage the `mdb` bucket
   ```bash
   garage bucket allow --read --write --owner mdb --key mdb-key
@@ -72,32 +78,34 @@ The first time you run this, the local object storage (Garage) must be configure
   docker compose up -d
   ```
 
-## 3. Set up your workspaces
+### b. Various
+
+- Configure S3 CORS (Necessary to upload files via the DB UI)
+  - `docker run marple-db poetry run python configure-s3-cors -o http://localhost:8001`
+
+## 4. Set up your workspaces
 
 - Default Login: chose your account name
-- Marple DB API: `http://localhost:8001`
+- Open Marple DB UI in the browser: `http://localhost:8001`
   - Upload a license file as provided by Marple (if licensing server is disabled)
-  - Copy `connection.json` to Marple Insight
-  - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
-- Marple Insight UI: `http://localhost:8000`
+  - Settings -> Marple Insight
+  - Fill in `Insight URL=http://localhost:8000` + `Save`
+  - Download `connection.json`
+- Open Marple Insight UI: `http://localhost:8000`
   - Upload a license file as provided by Marple (if licensing server is disabled)
   - Upload `connection.json`
   - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8001/api/v1`
-- Trino: `http://localhost:8080`
-- Upload a file in DB and verify you can visualise it in Inisght
+- Upload a file and verify you can visualise it in Insight
 
-## 4. Configure DNS and nginx (Optional)
+## 5. Configure DNS and nginx (Optional)
 
 In case you like to set up DNS + nginx:
 
 - Follow DNS setup in `marple-on-prem/README.md`
 - Remove the IdP parts from `marple.conf`, since those are redundant in an airgapped setup.
 
-## 5. Configuration
+## 7. Troubleshooting
 
-- Most settings are configurable via the `.env` file
-
-## 6. Troubleshooting
-
-- `docker compose logs SERVICE` to inspect startup issues
-- Use a `.wslconfig` file to configure amount of RAM (Windows)
+- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
+- `docker compose logs SERVICE` to inspect the docker logs
+- Use a `.wslconfig` file on Windows to configure the amount of RAM available
