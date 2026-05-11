@@ -11,31 +11,33 @@
 - 16 GB memory (32 GB if running Keycloak)
 - 64 GB free storage (containers + data)
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
-- https on your DNS records. If you cannot request https certificates, follow the readme of marple-airgapped instead
+- https. If you cannot request https certificates, follow the README of marple-airgap instead
 
-## 2. Fix DNS and nginx
+## 2. DNS & HTTPS
 
-- Set up DNS entry for
-  - Insight
-  - DB
-  - Trino
-  - Dex/Keycloack (optional, in case you don't have your own IdP)
-- Adapt `marple.conf` to the DNS new entries
-- Move `marple.conf` to `/etc/nginx/sites-enabled/marple.conf`
-- `systemctl enable nginx`
-- `systemctl start nginx`
-- `snap install --classic certbot`
-- `sudo /snap/bin/certbot --nginx`
+- Set up a DNS entry for
+  - Insight (e.g. https://insight.marple.example.com)
+  - DB (e.g. https://db.marple.example.com)
+  - Trino (e.g. https://trino.marple.example.com)
+  - Dex/Keycloack (optional, in case you don't bring your own IdP)
+- Configure routing & certificates. E.G. using `nginx` & `certbot` on Ubuntu:
+  - Enter the new DNS entries into `marple.conf`
+  - Add marple `marple.conf` to `/etc/nginx/sites-enabled/marple.conf`
+  - `systemctl enable nginx`
+  - `systemctl start nginx`
+  - `snap install --classic certbot`
+  - `sudo /snap/bin/certbot --nginx`
 
-## 3. Trino requirements
+## 3. Trino Settings
 
-- `chmod -R 777 /path/to/trino/` (for trino folder in `/marple-on-prem`)
-- Make sure that `$DOCKER_PATH_ROOT/swap/trino` has `+rwx`
-- `chown -R ubuntu:ubuntu {COMPOSE_PATH_ROOT}` (fill in value of COMPOSE_PATH_ROOT and optionally change user)
+Ensure Trino has full access to its configuration & spill directory. (Change the target directories as needed)
 
-## 4. Start Everything
+- `chmod -R 777 marple-installation/marple-on-prem/trino`
+- `chmod -R 777 $DOCKER_PATH_ROOT/swap/trino`
 
-Edit the `.env` file and set the required fields:
+## 4. Start Docker Services
+
+Rename the `.env.example` file to `.env` and set the required fields:
 
 - `DEPLOYMENT`
 - `AWS_ACCESS_KEY` This will be generated later
@@ -49,7 +51,11 @@ docker compose up -d
 docker compose ps
 ```
 
-The first time you run this, the local object storage (Garage) must be configured:
+### a. Local Object Storage Configuration (Garage)
+
+_Can be skipped if using a seperate S3-compatible blob storage_
+
+If using the local object storage (Garage), you'll need to configure it when running Marple for the first time.
 
 - Create a Temporary alias for running commands in the garage container:
   ```bash
@@ -90,23 +96,43 @@ The first time you run this, the local object storage (Garage) must be configure
   docker compose up -d
   ```
 
-### Configure dex config
+### b. Configure OAUTH IdP
 
-Optional, in case you don't link to your own IdP.
-Change the variables with # TODO in the dex-config.yaml file.
+_Can be skipped if using 'OFFLINE' auth_
+
+1. Dex:
+   - Change the variables with # TODO in the dex-config.yaml file
+   - Default user/pass = admin@marpledata.com/password
+2. Keycloak:
+   - Find/replace `http://localhost` with your preferred redirect URL
+   - Or use the Keycloak Admin UI (default user/pass = admin@marpledata.com/password)
+3. Other OAUTH/OIDC IdP:
+   - Create a client for Marple (Single Page Application)
+   - Configure redirect URLs
+     - Allowed web origins: https://insight.marple.example.com, https://db.marple.example.com
+     - Redirect callbacks: https://insight.marple.example.com, https://db.marple.example.com/login
+     - Allowed logout URLs: https://insight.marple.example.com/logout, https://db.marple.example.com/logout
+   - Fill in OIDC_DOMAIN, OIDC_ISSUER, OIDC_CLIENT, OIDC_AUDIENCE, OIDC_SCOPE as needed in the `.env` file
+
+### c. Various
+
+- Configure S3 CORS (Necessary to upload files via the DB UI)
+  - `docker run marple-db poetry run python configure-s3-cors -o https://db.marple.example.com`
 
 ## 5. Set up your workspaces
 
-- Default Login: `admin@marpledata.com` / `password`
-- Go to Marple DB
+- Open Marple DB UI in the browser (https://db.marple.example.com)
+  - Upload a license file as provided by Marple (if licensing server is disabled)
   - Settings -> Marple Insight
   - Fill in `Insight URL` + `Save`
   - Download `connection.json`
-- Go to Marple Insight
+
+- Open Marple Insight
+  - Upload a license file as provided by Marple (if licensing server is disabled)
   - Settings -> Connection
   - Upload `connection.json`
-- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
-- Upload a file and verify you can visualise it in Inisght
+
+- Upload a file and verify you can visualise it in Insight
 
 ## 6. Configuration
 
@@ -117,5 +143,6 @@ Change the variables with # TODO in the dex-config.yaml file.
 
 ## 7. Troubleshooting
 
-- `docker compose logs SERVICE` to inspect startup issues
-- Use a `.wslconfig` file to configure amount of RAM (Windows)
+- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
+- `docker compose logs SERVICE` to inspect the docker logs
+- Use a `.wslconfig` file on Windows to configure the amount of RAM available
