@@ -25,6 +25,8 @@ Rename the `.env.example` file to `.env` and set the required fields:
 - Check all variables flagged with "TODO"
 - Other variables are optional
 
+Pull and start the docker containers by executing
+
 ```bash
 docker login docker.marpledata.com # log in with a robot account provided by Marple
 docker compose up -d
@@ -83,17 +85,16 @@ If using the local object storage (Garage), you'll need to configure it when run
 
 ## 4. Set up your workspaces
 
+- Default Login: chose your account name
 - Open Marple DB UI in the browser: `http://localhost:8001`
   - Upload a license file as provided by Marple (if licensing server is disabled)
   - Settings -> Marple Insight
   - Fill in `Insight URL=http://localhost:8000` + `Save`
   - Download `connection.json`
-
 - Open Marple Insight UI: `http://localhost:8000`
   - Upload a license file as provided by Marple (if licensing server is disabled)
   - Upload `connection.json`
   - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8001/api/v1`
-
 - Upload a file and verify you can visualise it in Insight
 
 ## 5. Configure DNS and nginx (Optional)
