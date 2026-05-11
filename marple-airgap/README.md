@@ -17,7 +17,7 @@ Want to set up your own IdP on Marple? Follow the readme of marple-on-prem.
 
 ## 2. Start Everything
 
-Edit the `.env` file and set the required fields:
+Rename the `.env.example` file to `.env` and set the required fields:
 
 - `DEPLOYMENT`
 - `AWS_ACCESS_KEY` This will be generated later
