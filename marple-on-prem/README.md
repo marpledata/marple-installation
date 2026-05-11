@@ -8,7 +8,7 @@
 - Docker Compose plugin ≥ 2.20
   - Verify installation `docker compose version`
   - [Install](https://docs.docker.com/compose/install/) if missing
-- 16 GB memory (32 GB if running Keycloak)
+- 16 GB memory
 - 64 GB free storage (containers + data)
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
 - https. If you cannot request https certificates, follow the README of marple-airgap instead
