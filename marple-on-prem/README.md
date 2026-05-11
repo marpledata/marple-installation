@@ -13,6 +13,18 @@
 - Internet access once to pull images, or use an online machine to `docker pull`, `docker save`, transfer the archives, then `docker load` on the offline host
 - https. If you cannot request https certificates, follow the README of marple-airgap instead
 
+### Bundled Services
+
+For convenience the compose file ships with everything Marple needs to run end-to-end. For production we strongly recommend swapping these out for managed alternatives.
+
+| Bundled (development)  | Recommended for production                   |
+| ---------------------- | -------------------------------------------- |
+| Postgres container     | Managed Postgres (e.g. AWS RDS, Cloud SQL)   |
+| Garage (S3-compatible) | Managed object storage (e.g. AWS S3)         |
+| Dex / Keycloak         | Managed IdP (Auth0, Okta, Cognito, Entra ID) |
+
+All three are configured via `.env` (`POSTGRES_*`, `MDB_AWS_*`, `OIDC_*` / `IDP_PROVIDER`).
+
 ## 2. DNS & HTTPS
 
 - Set up a DNS entry for
@@ -141,7 +153,67 @@ _Can be skipped if using 'OFFLINE' auth_
 - Keycloak settings can be edited in `marple-realm.json`
   - Find/replace `http://localhost` with your preferred redirect URL
 
-## 7. Troubleshooting
+## 7. Backups
+
+If you do decide to use the bundled Postgres and/or Garage, set up at least a daily backup. **Copying the data directory while the containers are running can produce an unrestorable Postgres backup** — use `pg_dumpall` for the database and a `tar` snapshot for object storage. Save the script as e.g. `/usr/local/bin/marple-backup.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+RETENTION_DAYS="${1:-7}"
+DATA_ROOT="${DATA_ROOT:-/srv/marple/data}"          # matches COMPOSE_PATH_ROOT in .env
+BACKUP_ROOT="${BACKUP_ROOT:-/srv/marple/backups}"
+DAILY="$BACKUP_ROOT/$(date +%F)"
+
+mkdir -p "$DAILY"
+echo "Backing up to $DAILY"
+
+# Postgres: logical dump (safe while the DB is live)
+docker exec -t marple-postgres \
+  pg_dumpall -U "${POSTGRES_USER:-marple}" \
+  | gzip > "$DAILY/postgres.sql.gz"
+
+# Garage object storage: tar the on-disk data + meta
+tar -C "$DATA_ROOT" -czf "$DAILY/garage.tgz" garage
+
+# (Optional) ship off-host so a disk loss doesn't take the backups with it
+# aws s3 sync "$DAILY" "s3://my-backups/marple/$(date +%F)/"
+
+# Prune old daily folders
+find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d \
+     -mtime "+$RETENTION_DAYS" -exec rm -rf {} +
+```
+
+Then schedule it to run daily (e.g. at 02:00) via `crontab -e`:
+
+```cron
+0 2 * * * /usr/local/bin/marple-backup.sh >> /var/log/marple-backup.log 2>&1
+```
+
+> **Test the restore path at least once.** An untested backup is a hope, not a backup.
+
+To restore from a `$DAILY` folder, stop the stack, put the Garage data back on disk, then replay the Postgres dump against a fresh container:
+
+```bash
+DAILY=/srv/marple/backups/YYYY-MM-DD          # folder to restore from
+DATA_ROOT=/srv/marple/data                    # matches COMPOSE_PATH_ROOT in .env
+
+docker compose down
+
+# Garage: wipe the existing data dir and extract the snapshot back in place
+rm -rf "$DATA_ROOT/garage"
+tar -C "$DATA_ROOT" -xzf "$DAILY/garage.tgz"
+
+# Postgres: start only the DB, drop the old contents, replay the dump
+docker compose up -d postgres
+gunzip -c "$DAILY/postgres.sql.gz" \
+  | docker exec -i marple-postgres psql -U "${POSTGRES_USER:-marple}" -d postgres
+
+docker compose up -d
+```
+
+## 8. Troubleshooting
 
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - `docker compose logs SERVICE` to inspect the docker logs
