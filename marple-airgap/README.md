@@ -40,8 +40,13 @@ _If using your own Blob storage, this part can be skipped_
 If using the local object storage (Garage), you'll need to configure it when running Marple for the first time.
 
 - Create a Temporary alias for running commands in the garage container:
+  #### Unix/MacOS
   ```bash
   alias garage="docker exec -ti marple-garage /garage"
+  ```
+  #### Powershell
+  ```powershell
+  function garage { docker exec -ti marple-garage /garage $args }
   ```
 - Get the id of this garage node to use in the next command:
   ```bash
@@ -59,19 +64,17 @@ If using the local object storage (Garage), you'll need to configure it when run
   ```bash
   garage bucket create mdb
   ```
-- Generate a key and copy to Key ID & Secret key to [.env](.env)
-
+- Generate a key (you'll need this in the next steps)
   ```bash
   garage key create mdb-key
   ```
-
-  - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
-  - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
-
 - Allow the newly created key to manage the `mdb` bucket
   ```bash
   garage bucket allow --read --write --owner mdb --key mdb-key
   ```
+- Copy the generated bucket Key ID & Secret key to [.env](.env)
+  - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
+  - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
 - Restart the containers to use the correct env variables:
   ```bash
   docker compose down
@@ -80,8 +83,30 @@ If using the local object storage (Garage), you'll need to configure it when run
 
 ### b. Various
 
+- Point `marple.local` to localhost
+
+  Add `127.0.0.1 marple.local` to the hosts file:
+
+  #### Unix/MacOS
+
+  ```bash
+  sudo sh -c 'echo "127.0.0.1 marple.local" >> /etc/hosts'
+  ```
+
+  #### Windows
+
+  Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) and add at the bottom:
+
+  ```bash
+  127.0.0.1 marple.local
+  ```
+
 - Configure S3 CORS (Necessary to upload files via the DB UI)
-  - `docker run marple-db poetry run python configure-s3-cors -o http://localhost:8001`
+  ```bash
+  docker exec marple-db poetry run python ./muhandis.py configure-s3-cors -o http://localhost:8001
+  docker compose down
+  docker compose up -d
+  ```
 
 ## 4. Set up your workspaces
 
@@ -94,7 +119,7 @@ If using the local object storage (Garage), you'll need to configure it when run
 - Open Marple Insight UI: `http://localhost:8000`
   - Upload a license file as provided by Marple (if licensing server is disabled)
   - Upload `connection.json`
-  - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8001/api/v1`
+  - In case of localhost: edit `MarpleDB API URL` in Authentication tab to use the docker host IP: `http://172.17.0.1:8001/api/v1`
 - Upload a file and verify you can visualise it in Insight
 
 ## 5. Configure DNS and nginx (Optional)
@@ -104,7 +129,7 @@ In case you like to set up DNS + nginx:
 - Follow DNS setup in `marple-on-prem/README.md`
 - Remove the IdP parts from `marple.conf`, since those are redundant in an airgapped setup.
 
-## 7. Troubleshooting
+## 6. Troubleshooting
 
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - `docker compose logs SERVICE` to inspect the docker logs
