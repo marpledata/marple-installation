@@ -40,11 +40,11 @@ _If using your own Blob storage, this part can be skipped_
 If using the local object storage (Garage), you'll need to configure it when running Marple for the first time.
 
 - Create a Temporary alias for running commands in the garage container:
-  Ubuntu/linux
+  #### Unix/MacOS
   ```bash
   alias garage="docker exec -ti marple-garage /garage"
   ```
-  Powershell
+  #### Powershell
   ```powershell
   function garage { docker exec -ti marple-garage /garage $args }
   ```
