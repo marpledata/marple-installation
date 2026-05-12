@@ -40,8 +40,13 @@ _If using your own Blob storage, this part can be skipped_
 If using the local object storage (Garage), you'll need to configure it when running Marple for the first time.
 
 - Create a Temporary alias for running commands in the garage container:
+  Ubuntu/linux
   ```bash
   alias garage="docker exec -ti marple-garage /garage"
+  ```
+  Powershell
+  ```powershell
+  function garage { docker exec -ti marple-garage /garage $args }
   ```
 - Get the id of this garage node to use in the next command:
   ```bash
@@ -59,19 +64,17 @@ If using the local object storage (Garage), you'll need to configure it when run
   ```bash
   garage bucket create mdb
   ```
-- Generate a key and copy to Key ID & Secret key to [.env](.env)
-
+- Generate a key (you'll need this in the next steps)
   ```bash
   garage key create mdb-key
   ```
-
-  - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
-  - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
-
 - Allow the newly created key to manage the `mdb` bucket
   ```bash
   garage bucket allow --read --write --owner mdb --key mdb-key
   ```
+- Copy the generated bucket Key ID & Secret key to [.env](.env)
+  - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
+  - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
 - Restart the containers to use the correct env variables:
   ```bash
   docker compose down
@@ -81,7 +84,12 @@ If using the local object storage (Garage), you'll need to configure it when run
 ### b. Various
 
 - Configure S3 CORS (Necessary to upload files via the DB UI)
-  - `docker run marple-db poetry run python configure-s3-cors -o http://localhost:8001`
+  - `docker exec marple-db poetry run python ./muhandis.py configure-s3-cors -o http://localhost:8001`
+  - Restart the containers to use the correct env variables:
+  ```bash
+  docker compose down
+  docker compose up -d
+  ```
 
 ## 4. Set up your workspaces
 
