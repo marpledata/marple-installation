@@ -102,9 +102,8 @@ If using the local object storage (Garage), you'll need to configure it when run
   ```
 
 - Configure S3 CORS (Necessary to upload files via the DB UI)
-  - `docker exec marple-db poetry run python ./muhandis.py configure-s3-cors -o http://localhost:8001`
-  - Restart the containers to use the correct env variables:
   ```bash
+  docker exec marple-db poetry run python ./muhandis.py configure-s3-cors -o http://localhost:8001
   docker compose down
   docker compose up -d
   ```
