@@ -119,7 +119,7 @@ If using the local object storage (Garage), you'll need to configure it when run
 - Open Marple Insight UI: `http://localhost:8000`
   - Upload a license file as provided by Marple (if licensing server is disabled)
   - Upload `connection.json`
-  - In case of localhost: edit MarpleDB API URL to use the docker host IP: `http://172.17.0.1:8001/api/v1`
+  - In case of localhost: edit `MarpleDB API URL` in Authentication tab to use the docker host IP: `http://172.17.0.1:8001/api/v1`
 - Upload a file and verify you can visualise it in Insight
 
 ## 5. Configure DNS and nginx (Optional)
@@ -129,7 +129,7 @@ In case you like to set up DNS + nginx:
 - Follow DNS setup in `marple-on-prem/README.md`
 - Remove the IdP parts from `marple.conf`, since those are redundant in an airgapped setup.
 
-## 7. Troubleshooting
+## 6. Troubleshooting
 
 - If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
 - `docker compose logs SERVICE` to inspect the docker logs
