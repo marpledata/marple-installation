@@ -81,33 +81,6 @@ If using the local object storage (Garage), you'll need to configure it when run
   docker compose up -d
   ```
 
-### b. Various
-
-- Point `marple.local` to localhost
-
-  Add `127.0.0.1 marple.local` to the hosts file:
-
-  #### Unix/MacOS
-
-  ```bash
-  sudo sh -c 'echo "127.0.0.1 marple.local" >> /etc/hosts'
-  ```
-
-  #### Windows
-
-  Open `C:\Windows\System32\drivers\etc\hosts` in Notepad (Run as Administrator) and add at the bottom:
-
-  ```bash
-  127.0.0.1 marple.local
-  ```
-
-- Configure S3 CORS (Necessary to upload files via the DB UI)
-  ```bash
-  docker exec marple-db poetry run python ./muhandis.py configure-s3-cors -o http://localhost:8001
-  docker compose down
-  docker compose up -d
-  ```
-
 ## 4. Set up your workspaces
 
 - Default Login: chose your account name
