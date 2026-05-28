@@ -35,10 +35,6 @@ services:
       test: ["CMD", "/garage", "status"]
       timeout: 5s
     restart: unless-stopped
-    networks:
-      default:
-        aliases:
-          - marple.local
 
   marple-insight:
     container_name: marple-insight
