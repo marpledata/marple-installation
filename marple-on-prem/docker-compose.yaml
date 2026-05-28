@@ -66,7 +66,7 @@ services:
   #   ports:
   #   - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
   #   volumes:
-  #   - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
+  #   - ./idp/marple-realm.json:/opt/keycloak/data/import/marple-realm.json
   #   depends_on:
   #     postgres:
   #       condition: service_healthy
