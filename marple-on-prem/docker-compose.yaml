@@ -25,7 +25,7 @@ services:
       - "3900:3900" # S3 API
       - "3903:3903" # Admin API
     volumes:
-      - ./garage.toml:/etc/garage.toml
+      - ./garage/garage.toml:/etc/garage.toml
       - ${COMPOSE_PATH_ROOT}/garage/data:/var/lib/garage/data
       - ${COMPOSE_PATH_ROOT}/garage/meta:/var/lib/garage/meta
     healthcheck:
@@ -42,7 +42,7 @@ services:
     ports:
       - ${COMPOSE_PORT_IDP:-8080}:8080
     volumes:
-      - ./dex-config.yaml:/etc/dex/config.yaml
+      - ./idp/dex-config.yaml:/etc/dex/config.yaml
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,7 +66,7 @@ services:
   #   ports:
   #   - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
   #   volumes:
-  #   - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
+  #   - ./idp/marple-realm.json:/opt/keycloak/data/import/marple-realm.json
   #   depends_on:
   #     postgres:
   #       condition: service_healthy
@@ -81,7 +81,7 @@ services:
       MARPLE_DEPLOYMENT: $DEPLOYMENT
       MARPLE_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
       MARPLE_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
-      MARPLE_POSTGRES_HOST: postgres
+      MARPLE_POSTGRES_HOST: $POSTGRES_HOST
       MARPLE_POSTGRES_PORT: $POSTGRES_PORT
       MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
       MARPLE_POSTGRES_USER: $POSTGRES_USER
@@ -96,6 +96,7 @@ services:
       - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
+      - ${COMPOSE_PATH_ROOT}/swap/exports:/srv/marple/exports
     depends_on:
       - postgres
     restart: unless-stopped
@@ -109,7 +110,7 @@ services:
       MDB_DEPLOYMENT: $DEPLOYMENT
       MDB_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
       MDB_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
-      MDB_DB_HOST: postgres
+      MDB_DB_HOST: $POSTGRES_HOST
       MDB_DB_PORT: $POSTGRES_PORT
       MDB_DB_NAME: $POSTGRES_DB
       MDB_DB_USER: $POSTGRES_USER
@@ -123,6 +124,7 @@ services:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+      - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
       - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
     depends_on:
       - postgres
