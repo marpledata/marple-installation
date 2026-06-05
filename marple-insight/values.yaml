@@ -50,6 +50,12 @@ env:
     value: "" # has to be a group from your IdP
   - name: MARPLE_POSTMARK_SEND_MAIL
     value: true # send emails on user invites
+  - name: MARPLE_AI_API_KEY
+    value: "" # Optional, enables AI plot generation
+  - name: MARPLE_AI_BASE_URL
+    value: "https://api.openai.com/v1"
+  - name: MARPLE_AI_MODEL
+    value: "gpt-4o-mini"
 # container sizing
 resources:
   cpu: "4"
