@@ -105,3 +105,7 @@ services:
       # Password authenticator config
       - ./trino/config.properties:/etc/trino/config.properties:ro
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.5"  # Set to +- 70% of available CPU cores
