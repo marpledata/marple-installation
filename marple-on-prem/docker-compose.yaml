@@ -145,3 +145,7 @@ services:
       - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
       - ${COMPOSE_PATH_ROOT}/swap/trino:/data/spill
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.5"  # Set to +- 70% of available CPU cores
