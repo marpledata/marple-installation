@@ -103,7 +103,7 @@ services:
 
   marple-db:
     container_name: marple-db
-    image: docker.marpledata.com/library/marpledb:${VERSION_DB:-2.11.1}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
     env_file:
       - .env
     environment:
@@ -125,11 +125,17 @@ services:
     volumes:
       - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
       - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
-      - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
+    healthcheck:
+      # prepare_config writes this first, before the slow schema-init/upgrade,
+      # so trino can start as soon as etc/, plugin/ and the spill dir exist.
+      test: ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     depends_on:
       - postgres
       - garage
-      - trino
     restart: unless-stopped
 
   trino:
@@ -142,10 +148,21 @@ services:
       - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
+      # The baked password-authenticator.properties uses ${ENV:MDB_DB_*}, but on-prem's
+      # .env only defines POSTGRES_*. Map them here (the marple-db service does the same).
+      MDB_DB_HOST: $POSTGRES_HOST
+      MDB_DB_PORT: $POSTGRES_PORT
+      MDB_DB_NAME: $POSTGRES_DB
+      MDB_DB_USER: $POSTGRES_USER
+      MDB_DB_PASSWORD: $POSTGRES_PASSWORD
     volumes:
-      - ./trino/etc:/etc/trino
-      - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
-      - ${COMPOSE_PATH_ROOT}/swap/trino:/data/spill
+      # The backend writes the Trino config (etc/, plugin/, spill/) to the shared swap volume.
+      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/etc:/etc/trino
+      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
+      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/spill:/data/spill
+    depends_on:
+      marple-db:
+        condition: service_healthy
     restart: unless-stopped
     deploy:
       resources:
