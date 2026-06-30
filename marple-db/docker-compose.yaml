@@ -11,7 +11,7 @@ services:
     healthcheck:
       # prepare_config writes this first, before the slow schema-init/upgrade,
       # so trino can start as soon as etc/, plugin/ and the spill dir exist.
-      test: ["CMD", "test", "-f", "/srv/marpledb/trino/etc/config.properties"]
+      test: ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
       interval: 5s
       timeout: 5s
       retries: 12
