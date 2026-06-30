@@ -1,5 +1,5 @@
 services:
-  marpledb:
+  marple-db:
     container_name: $MDB_CONTAINER_NAME
     image: docker.marpledata.com/library/marple-db:$MDB_VERSION
     env_file:
