@@ -1,7 +1,7 @@
 services:
   marpledb:
     container_name: $MDB_CONTAINER_NAME
-    image: docker.marpledata.com/library/marpledb:$MDB_VERSION
+    image: docker.marpledata.com/library/marple-db:$MDB_VERSION
     env_file:
       - .env
     ports:
@@ -29,9 +29,9 @@ services:
     ports:
       - "$TRINO_PORT:8080"
     volumes:
-      - $DOCKER_PATH_ROOT/trino/etc:/etc/trino
-      - $DOCKER_PATH_ROOT/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
-      - $DOCKER_PATH_ROOT/trino/spill:/data/spill
+      - $DOCKER_PATH_ROOT/swap/trino/etc:/etc/trino
+      - $DOCKER_PATH_ROOT/swap/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
+      - $DOCKER_PATH_ROOT/swap/trino/spill:/data/spill
     restart: unless-stopped
     deploy:
       resources:
