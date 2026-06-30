@@ -1,4 +1,4 @@
- services:
+services:
   marpledb:
     container_name: $MDB_CONTAINER_NAME
     image: docker.marpledata.com/library/marpledb:$MDB_VERSION
@@ -31,8 +31,8 @@
     volumes:
       - $DOCKER_PATH_ROOT/trino/etc:/etc/trino
       - $DOCKER_PATH_ROOT/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
-      - $DOCKER_PATH_ROOT/swap/trino:/data/spill
-    restart: unless-stopped 
+      - $DOCKER_PATH_ROOT/trino/spill:/data/spill
+    restart: unless-stopped
     deploy:
       resources:
         limits:
