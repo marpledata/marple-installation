@@ -42,10 +42,16 @@ All three are configured via `.env` (`POSTGRES_*`, `MDB_AWS_*`, `OIDC_*` / `IDP_
 
 ## 3. Trino Settings
 
-Ensure Trino has full access to its configuration & spill directory. (Change the target directories as needed)
+Trino's configuration (the `etc/` config, the `marpledb` auth plugin and the `rules.json`
+access-control rules) is baked into the `marple-db` image. On startup the backend deploys it to
+the shared swap volume at `$COMPOSE_PATH_ROOT/swap/imports/trino/{etc,plugin,spill}`, and the
+Trino container mounts it from there. There is no `trino/` directory to ship or edit by hand.
 
-- `chmod -R 777 marple-installation/marple-on-prem/trino`
-- `chmod -R 777 $DOCKER_PATH_ROOT/swap/trino`
+If the Trino container cannot read its config or write its spill directory, grant access to that
+deployed directory (after the `marple-db` container has started and written it). Change the path
+to match `COMPOSE_PATH_ROOT` in your `.env`:
+
+- `chmod -R 777 $COMPOSE_PATH_ROOT/swap/imports/trino`
 
 ## 4. Start Docker Services
 
