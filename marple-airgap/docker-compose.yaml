@@ -99,7 +99,7 @@ services:
       resources:
         limits:
           # Combined container runs API + workers; give it the lion's share.
-          cpus: "${MDB_CPU_LIMIT:-3}"
+          cpus: "${MDB_CPU_LIMIT:-2}"
           memory: ${MDB_MEM_LIMIT:-4g}
 
   marple-trino:
@@ -117,5 +117,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${TRINO_CPU_LIMIT:-2.5}"  # Set to +- 70% of available CPU cores
+          cpus: "${TRINO_CPU_LIMIT:-2}"
           memory: ${TRINO_MEM_LIMIT:-4g}

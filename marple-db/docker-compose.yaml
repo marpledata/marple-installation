@@ -13,7 +13,8 @@ services:
     healthcheck:
       # prepare_config writes this first, before the slow schema-init/upgrade,
       # so trino can start as soon as etc/, plugin/ and the spill dir exist.
-      test: ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
+      test:
+        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
       interval: 5s
       timeout: 5s
       retries: 12
@@ -44,7 +45,6 @@ services:
     restart: unless-stopped
     deploy:
       # The queue startup-reset assumes one worker process per queue; do not scale this out.
-      replicas: 1
       resources:
         limits:
           # Workers do the heavy ingestion; give them the larger memory budget.
@@ -69,5 +69,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${TRINO_CPU_LIMIT:-2.5}"  # Set to +- 70% of available CPU cores
+          cpus: "${TRINO_CPU_LIMIT:-2}"
           memory: ${TRINO_MEM_LIMIT:-4g}
