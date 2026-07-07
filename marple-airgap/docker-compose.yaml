@@ -95,6 +95,12 @@ services:
       - marple-garage
       - marple-trino
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          # Combined container runs API + workers; give it the lion's share.
+          cpus: "${MDB_CPU_LIMIT:-3}"
+          memory: ${MDB_MEM_LIMIT:-4g}
 
   marple-trino:
     container_name: marple-trino
@@ -111,4 +117,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.5"  # Set to +- 70% of available CPU cores
+          cpus: "${TRINO_CPU_LIMIT:-2.5}"  # Set to +- 70% of available CPU cores
+          memory: ${TRINO_MEM_LIMIT:-4g}

@@ -145,6 +145,11 @@ services:
       - postgres
       - garage
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${MDB_CPU_LIMIT:-2}"
+          memory: ${MDB_MEM_LIMIT:-3g}
 
   marple-db-worker:
     container_name: marple-db-worker
@@ -169,6 +174,11 @@ services:
     deploy:
       # The queue startup-reset assumes one worker process per queue; do not scale this out.
       replicas: 1
+      resources:
+        limits:
+          # Workers do the heavy ingestion; give them the larger memory budget.
+          cpus: "${MDB_WORKER_CPU_LIMIT:-2}"
+          memory: ${MDB_WORKER_MEM_LIMIT:-4g}
 
   trino:
     container_name: marple-trino
@@ -199,4 +209,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.5"  # Set to +- 70% of available CPU cores
+          cpus: "${TRINO_CPU_LIMIT:-2.5}"  # Set to +- 70% of available CPU cores
+          memory: ${TRINO_MEM_LIMIT:-4g}
