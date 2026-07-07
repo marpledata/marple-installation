@@ -148,9 +148,10 @@ services:
     restart: unless-stopped
     deploy:
       resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
         limits:
-          cpus: "${MDB_CPU_LIMIT:-2}"
-          memory: ${MDB_MEM_LIMIT:-4g}
+          cpus: "${MDB_CPU_LIMIT:-0}"
+          memory: "${MDB_MEM_LIMIT:-0}"
 
   marple-db-worker:
     container_name: marple-db-worker
@@ -175,9 +176,10 @@ services:
     deploy:
       # The queue startup-reset assumes one worker process per queue; do not scale this out.
       resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
         limits:
-          cpus: "${MDB_WORKER_CPU_LIMIT:-2}"
-          memory: ${MDB_WORKER_MEM_LIMIT:-4g}
+          cpus: "${MDB_WORKER_CPU_LIMIT:-0}"
+          memory: "${MDB_WORKER_MEM_LIMIT:-0}"
 
   trino:
     container_name: marple-trino
@@ -207,6 +209,7 @@ services:
     restart: unless-stopped
     deploy:
       resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
         limits:
-          cpus: "${TRINO_CPU_LIMIT:-2}"
-          memory: ${TRINO_MEM_LIMIT:-4g}
+          cpus: "${TRINO_CPU_LIMIT:-0}"
+          memory: "${TRINO_MEM_LIMIT:-0}"
