@@ -67,6 +67,9 @@ services:
   marple-db:
     container_name: marple-db
     image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
+    # Single-container deployment: run the API server and the workers together.
+    command: ["./start.sh", "all"]
+    init: true
     env_file:
       - .env
     environment:

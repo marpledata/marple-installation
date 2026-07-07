@@ -1,3 +1,24 @@
+# Shared by the marple-db (web) and marple-db-worker services so their config cannot drift.
+x-mdb-environment: &mdb-environment
+  MDB_DEPLOYMENT: $DEPLOYMENT
+  MDB_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
+  MDB_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
+  MDB_DB_HOST: $POSTGRES_HOST
+  MDB_DB_PORT: $POSTGRES_PORT
+  MDB_DB_NAME: $POSTGRES_DB
+  MDB_DB_USER: $POSTGRES_USER
+  MDB_DB_PASSWORD: $POSTGRES_PASSWORD
+  MDB_IDP_PROVIDER: $IDP_PROVIDER
+  MDB_OIDC_DOMAIN: $OIDC_DOMAIN
+  MDB_OIDC_CLIENT: $OIDC_CLIENT
+  MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
+  MDB_OIDC_SCOPE: $OIDC_SCOPE
+
+# The worker must see the same uploads / scratch / trino config as the web container.
+x-mdb-volumes: &mdb-volumes
+  - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+  - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
+
 services:
   postgres:
     container_name: marple-postgres
@@ -104,27 +125,14 @@ services:
   marple-db:
     container_name: marple-db
     image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
+    command: ["./start.sh", "web"]
+    init: true
     env_file:
       - .env
-    environment:
-      MDB_DEPLOYMENT: $DEPLOYMENT
-      MDB_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
-      MDB_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
-      MDB_DB_HOST: $POSTGRES_HOST
-      MDB_DB_PORT: $POSTGRES_PORT
-      MDB_DB_NAME: $POSTGRES_DB
-      MDB_DB_USER: $POSTGRES_USER
-      MDB_DB_PASSWORD: $POSTGRES_PASSWORD
-      MDB_IDP_PROVIDER: $IDP_PROVIDER
-      MDB_OIDC_DOMAIN: $OIDC_DOMAIN
-      MDB_OIDC_CLIENT: $OIDC_CLIENT
-      MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
-      MDB_OIDC_SCOPE: $OIDC_SCOPE
+    environment: *mdb-environment
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
-    volumes:
-      - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
-      - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
+    volumes: *mdb-volumes
     healthcheck:
       # prepare_config writes this first, before the slow schema-init/upgrade,
       # so trino can start as soon as etc/, plugin/ and the spill dir exist.
@@ -137,6 +145,30 @@ services:
       - postgres
       - garage
     restart: unless-stopped
+
+  marple-db-worker:
+    container_name: marple-db-worker
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
+    command: ["./start.sh", "worker"]
+    init: true
+    env_file:
+      - .env
+    environment: *mdb-environment
+    volumes: *mdb-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+      marple-db:
+        # Wait until the web container's `prepare` has written the trino config.
+        condition: service_healthy
+      trino:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      # The queue startup-reset assumes one worker process per queue; do not scale this out.
+      replicas: 1
 
   trino:
     container_name: marple-trino

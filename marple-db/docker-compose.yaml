@@ -2,6 +2,8 @@ services:
   marple-db:
     container_name: $MDB_CONTAINER_NAME
     image: docker.marpledata.com/library/marple-db:$MDB_VERSION
+    command: ["./start.sh", "web"]
+    init: true
     env_file:
       - .env
     ports:
@@ -17,6 +19,27 @@ services:
       retries: 12
       start_period: 30s
     restart: unless-stopped
+
+  marple-db-worker:
+    container_name: ${MDB_WORKER_CONTAINER_NAME:-marple-db-worker}
+    image: docker.marpledata.com/library/marple-db:$MDB_VERSION
+    command: ["./start.sh", "worker"]
+    init: true
+    env_file:
+      - .env
+    # Must see the same uploads / scratch / trino config as the web container.
+    volumes:
+      - $DOCKER_PATH_ROOT:/srv/marpledb
+    depends_on:
+      marple-db:
+        # Wait until the web container's `prepare` has written the trino config.
+        condition: service_healthy
+      trino:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      # The queue startup-reset assumes one worker process per queue; do not scale this out.
+      replicas: 1
 
   trino:
     container_name: $TRINO_CONTAINER_NAME
