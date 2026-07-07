@@ -2,6 +2,8 @@ services:
   marple-db:
     container_name: $MDB_CONTAINER_NAME
     image: docker.marpledata.com/library/marple-db:$MDB_VERSION
+    command: ["./start.sh", "web"]
+    init: true
     env_file:
       - .env
     ports:
@@ -11,12 +13,44 @@ services:
     healthcheck:
       # prepare_config writes this first, before the slow schema-init/upgrade,
       # so trino can start as soon as etc/, plugin/ and the spill dir exist.
-      test: ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
+      test:
+        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
       interval: 5s
       timeout: 5s
       retries: 12
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_CPU_LIMIT:-0}"
+          memory: "${MDB_MEM_LIMIT:-0}"
+
+  marple-db-worker:
+    container_name: ${MDB_WORKER_CONTAINER_NAME:-marple-db-worker}
+    image: docker.marpledata.com/library/marple-db:$MDB_VERSION
+    command: ["./start.sh", "worker"]
+    init: true
+    env_file:
+      - .env
+    # Must see the same uploads / scratch / trino config as the web container.
+    volumes:
+      - $DOCKER_PATH_ROOT:/srv/marpledb
+    depends_on:
+      marple-db:
+        # Wait until the web container's `prepare` has written the trino config.
+        condition: service_healthy
+      trino:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      # The queue startup-reset assumes one worker process per queue; do not scale this out.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_WORKER_CPU_LIMIT:-0}"
+          memory: "${MDB_WORKER_MEM_LIMIT:-0}"
 
   trino:
     container_name: $TRINO_CONTAINER_NAME
@@ -35,5 +69,7 @@ services:
     restart: unless-stopped
     deploy:
       resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
         limits:
-          cpus: "2.5"  # Set to +- 70% of available CPU cores
+          cpus: "${TRINO_CPU_LIMIT:-0}"
+          memory: "${TRINO_MEM_LIMIT:-0}"
