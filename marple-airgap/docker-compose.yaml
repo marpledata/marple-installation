@@ -1,3 +1,7 @@
+# Resource limits and worker counts come from .env; append a profile from
+# ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
+# NOTE: marple-db runs ./start.sh all (API + workers in one container), so give
+# MDB_MEM_LIMIT the combined budget; MDB_WORKER_* limits do not apply here.
 services:
   marple-postgres:
     container_name: marple-postgres

@@ -62,7 +62,7 @@ Software
 Minimal specifications
 
 - Linux (x86, ARM is not supported)
-- 4 vCPU, 8 GB RAM
+- 2 vCPU, 8 GB RAM for the `small` profile; scale up with the `medium` (4 vCPU / 16 GB) or `large` (8 vCPU / 32 GB) profile. See [`profiles/README.md`](profiles/README.md).
 - 20 GB storage, that can be mounted as a [volume](https://docs.docker.com/storage/volumes/)
 - A working internet connection, to pull the Marple container
 - A network connection, with 100 Mbit/s upload speed, and equal or better download speed
@@ -73,24 +73,27 @@ Minimal specifications
    - A `license.json` file
    - Credentials for the docker registry
    - A deployment name
-2. Download `.env` and `docker-compose.yaml` from this repository
-3. Edit `.env`, and set
+2. Download `.env.example` and `docker-compose.yaml` from the relevant deployment directory in this repository
+3. Create your `.env` from the example and append a resource profile that matches your host:
+   - `cp .env.example .env`
+   - `cat ../profiles/small.env >> .env` (or `medium.env` / `large.env`; see [`profiles/README.md`](profiles/README.md))
+4. Edit `.env`, and set
    - `MARPLE_DEPLOYMENT` = the deployment name you got from the Marple team
    - `MARPLE_PUBLIC_URL` = the hostname where the application will be reachable
    - `MARPLE_AUTH_PROVIDER` = OAUTH if you want to connect your IdP (default is OFFLINE)
    - `MARPLE_PATH_ROOT` = path to a directory (volume) where configuration files can be stored
-4. (Optionally) configure an external Postgres. In the same `.env`, set
+5. (Optionally) configure an external Postgres. In the same `.env`, set
    - `MARPLE_POSTGRES_HOST` = IP or hostname
    - `MARPLE_POSTGRES_PORT` = port exposed by PostgreSQL, usually 5432
    - `MARPLE_POSTGRES_USER` = postgres user
    - `MARPLE_POSTGRES_PW` = password for this user
    - `MARPLE_POSTGRES_DB_NAME` = name of a clean database inside the server
-5. Put the `license.json` file in `MARPLE_HOME`
-6. Open a shell and authenticate with the docker registry with `docker login https://docker.marpledata.com`
-7. Open a shell inside the directory with `docker-compose.yaml`
-8. Execute `docker compose up -d` to start Marple
-9. Verify that Marple runs on the desired URL
-10. Finish the setup in Marple
+6. Put the `license.json` file in `MARPLE_HOME`
+7. Open a shell and authenticate with the docker registry with `docker login https://docker.marpledata.com`
+8. Open a shell inside the directory with `docker-compose.yaml`
+9. Execute `docker compose up -d` to start Marple
+10. Verify that Marple runs on the desired URL
+11. Finish the setup in Marple
 
 ### Updating
 

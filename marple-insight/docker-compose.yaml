@@ -1,4 +1,6 @@
-#docker-compose suited for Marple connect deployments (staging nightly)
+# docker-compose suited for Marple connect deployments (staging nightly)
+# Resource limits and worker counts come from .env; append a profile from
+# ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
 services:
   marple:
     container_name: $MARPLE_CONTAINER_NAME
@@ -10,9 +12,43 @@ services:
     volumes:
       # This should match the PATH_ROOT value in marple-deployment/core/config.yaml
       - $DOCKER_PATH_ROOT:/srv/marple
+      # Shared with the queue service: the queue writes exported files under
+      # PATH_ROOT/exports, and this container serves them over the /download endpoint.
+      - $DOCKER_PATH_ROOT/exports:/srv/marple/exports
     depends_on:
       - postgres
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MARPLE_CPU_LIMIT:-0}"
+          memory: "${MARPLE_MEM_LIMIT:-0}"
+
+  marple-insight-queue:
+    container_name: ${MARPLE_CONTAINER_NAME}-queue
+    image: docker.marpledata.com/library/marple-insight:$MARPLE_VERSION
+    env_file:
+      - .env
+    working_dir: /marple-core
+    entrypoint: []
+    command: ["poetry", "run", "python", "queue_worker.py"]
+    network_mode: "service:marple"
+    volumes:
+      # Must be the same volume as the `marple` service: the queue writes exported
+      # files under PATH_ROOT/exports, and the `marple` container serves them back
+      # over HTTP via the /download endpoint.
+      - $DOCKER_PATH_ROOT:/srv/marple
+    depends_on:
+      - marple
+    restart: unless-stopped
+    deploy:
+      # The queue runs one worker process; concurrency is set by MARPLE_PROCRASTINATE_WORKERS.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MARPLE_QUEUE_CPU_LIMIT:-0}"
+          memory: "${MARPLE_QUEUE_MEM_LIMIT:-0}"
 
   postgres:
     container_name: $MARPLE_POSTGRES_HOST
