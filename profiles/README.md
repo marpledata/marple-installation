@@ -58,21 +58,27 @@ Compose uses the last occurrence, so an override placed at the very bottom wins.
 
 ### Trino query budget
 
-Trino sizes its JVM heap to the container limit, so the query budget must be set
-together with `TRINO_MEM_LIMIT`. The hard rule is:
+Trino sizes its JVM heap to ~80% of the container limit (see `jvm.config` in the
+marple-db image), so the query budget must be set together with `TRINO_MEM_LIMIT`.
+Two rules apply:
 
 ```
-TRINO_QUERY_MAX_MEMORY_PER_NODE + TRINO_HEAP_HEADROOM_PER_NODE < JVM heap < TRINO_MEM_LIMIT
+# startup validation (strict less-than)
+TRINO_QUERY_MAX_MEMORY_PER_NODE + TRINO_HEAP_HEADROOM_PER_NODE < JVM heap
+
+# concurrent queries (max-total is per query, not cluster-wide)
+2 × TRINO_QUERY_MAX_TOTAL_MEMORY < JVM heap
 ```
 
-If the query budget is larger than the container allows, Trino fails to start.
+If the first inequality fails, Trino refuses to start. The second keeps two
+parallel spill-heavy queries from blowing past the heap.
 
 | Variable                          | small | medium | large |
 | --------------------------------- | ----- | ------ | ----- |
 | `TRINO_QUERY_MAX_MEMORY`          | 512MB | 1GB    | 3GB   |
 | `TRINO_QUERY_MAX_MEMORY_PER_NODE` | 512MB | 1GB    | 3GB   |
-| `TRINO_HEAP_HEADROOM_PER_NODE`    | 512MB | 512MB  | 1GB   |
-| `TRINO_QUERY_MAX_TOTAL_MEMORY`    | 1GB   | 2GB    | 5GB   |
+| `TRINO_HEAP_HEADROOM_PER_NODE`    | 384MB | 512MB  | 1GB   |
+| `TRINO_QUERY_MAX_TOTAL_MEMORY`    | 768MB | 1.5GB  | 4GB   |
 
 ### Application workers
 
@@ -96,7 +102,7 @@ confusion when budgeting memory:
 | `MDB_DB_POOL_MAX_SIZE`             | 8     | 12     | 16    | connections per process          |
 | `MDB_INGEST_WORKERS`               | 1     | 2      | 2     | processes (ingestion_queue only) |
 | `MDB_INGEST_WORKERS_PER_WORKSPACE` | 1     | 1      | 1     | ingestion slots per workspace    |
-| `MDB_INGEST_THREADS_PER_WORKER`    | 2     | 4      | 4     | parquet writer threads           |
+| `MDB_INGEST_THREADS_PER_WORKER`    | 4     | 8      | 16    | parquet writer threads           |
 | `MARPLE_API_WORKERS`               | 2     | 3      | 5     | gunicorn processes               |
 | `MARPLE_PROCRASTINATE_WORKERS`     | 2     | 3      | 5     | procrastinate concurrency        |
 
