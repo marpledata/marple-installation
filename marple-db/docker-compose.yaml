@@ -12,6 +12,7 @@ services:
       - $MDB_PORT:80
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
+      - $DOCKER_PATH_ROOT/.usage-automation.json:/etc/marple/.usage-automation.json
     restart: unless-stopped
     deploy:
       resources:
