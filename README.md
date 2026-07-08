@@ -62,7 +62,7 @@ Software
 Minimal specifications
 
 - Linux (x86, ARM is not supported)
-- 2 vCPU, 8 GB RAM for the `small` profile; scale up with the `medium` (4 vCPU / 16 GB) or `large` (8 vCPU / 32 GB) profile. See [`profiles/README.md`](profiles/README.md).
+- Recommended: `medium` (4 vCPU / 16 GB) or `large` (8 vCPU / 32 GB) profile. See [`profiles/README.md`](profiles/README.md).
 - 20 GB storage, that can be mounted as a [volume](https://docs.docker.com/storage/volumes/)
 - A working internet connection, to pull the Marple container
 - A network connection, with 100 Mbit/s upload speed, and equal or better download speed
