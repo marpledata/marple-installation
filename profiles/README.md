@@ -8,7 +8,9 @@ A profile sets three kinds of values:
 
 1. **Container limits** (`*_MEM_LIMIT`, `*_CPU_LIMIT`) enforced by Docker Compose,
    so that if a container runs out of memory only that container is killed, not
-   the whole host.
+   the whole host. By default only Trino gets a CPU cap; other services use
+   `*_CPU_LIMIT=0` (unlimited) because the memory budget is the important OOM
+   guardrail.
 2. **Trino query budget** (`TRINO_QUERY_*`, `TRINO_HEAP_HEADROOM_PER_NODE`) that
    must fit inside the Trino container limit.
 3. **Application worker counts** (`MDB_*`, `MARPLE_*`) that control how many
@@ -19,8 +21,8 @@ A profile sets three kinds of values:
 | Profile                    | Target host   | Capped container budget | Use when                                          |
 | -------------------------- | ------------- | ----------------------- | ------------------------------------------------- |
 | [`small.env`](small.env)   | 2 CPU / 8 GB  | ~7 GB                   | Staging, small single-team deployments, test VMs  |
-| [`medium.env`](medium.env) | 4 CPU / 16 GB | ~12 GB                  | Typical production for a single workspace or team |
-| [`large.env`](large.env)   | 8 CPU / 32 GB | ~24 GB                  | Heavy ingestion, many workspaces, large queries   |
+| [`medium.env`](medium.env) | 4 CPU / 16 GB | ~14 GB                  | Typical production for a single workspace or team |
+| [`large.env`](large.env)   | 8 CPU / 32 GB | ~28 GB                  | Heavy ingestion, many workspaces, large queries   |
 
 Each profile leaves headroom on the host for the OS, dockerd, and short-lived
 spikes (Trino queries, Iceberg commit bursts, report/export browsers).
@@ -48,11 +50,11 @@ Compose uses the last occurrence, so an override placed at the very bottom wins.
 
 | Variable                                            | small       | medium | large  |
 | --------------------------------------------------- | ----------- | ------ | ------ |
-| `TRINO_MEM_LIMIT` / `TRINO_CPU_LIMIT`               | 2g / 1      | 4g / 2 | 8g / 4 |
-| `MDB_MEM_LIMIT` / `MDB_CPU_LIMIT`                   | 512m / 0.5  | 1g / 1 | 1g / 1 |
-| `MDB_WORKER_MEM_LIMIT` / `MDB_WORKER_CPU_LIMIT`     | 2g / 1      | 3g / 2 | 6g / 4 |
-| `MARPLE_MEM_LIMIT` / `MARPLE_CPU_LIMIT`             | 1g / 0.5    | 2g / 1 | 3g / 2 |
-| `MARPLE_QUEUE_MEM_LIMIT` / `MARPLE_QUEUE_CPU_LIMIT` | 1536m / 0.5 | 2g / 1 | 4g / 2 |
+| `TRINO_MEM_LIMIT` / `TRINO_CPU_LIMIT`               | 2g / 1      | 4g / 2  | 10g / 4 |
+| `MDB_MEM_LIMIT` / `MDB_CPU_LIMIT`                   | 1g / 0      | 1g / 0  | 1g / 0  |
+| `MDB_WORKER_MEM_LIMIT` / `MDB_WORKER_CPU_LIMIT`     | 2g / 0      | 4g / 0  | 8g / 0  |
+| `MARPLE_MEM_LIMIT` / `MARPLE_CPU_LIMIT`             | 1g / 0      | 2g / 0  | 3g / 0  |
+| `MARPLE_QUEUE_MEM_LIMIT` / `MARPLE_QUEUE_CPU_LIMIT` | 1g / 0      | 3g / 0  | 6g / 0  |
 
 ### Trino query budget
 
@@ -67,10 +69,10 @@ If the query budget is larger than the container allows, Trino fails to start.
 
 | Variable                          | small | medium | large |
 | --------------------------------- | ----- | ------ | ----- |
-| `TRINO_QUERY_MAX_MEMORY`          | 512MB | 1GB    | 2GB   |
-| `TRINO_QUERY_MAX_MEMORY_PER_NODE` | 512MB | 1GB    | 2GB   |
+| `TRINO_QUERY_MAX_MEMORY`          | 512MB | 1GB    | 3GB   |
+| `TRINO_QUERY_MAX_MEMORY_PER_NODE` | 512MB | 1GB    | 3GB   |
 | `TRINO_HEAP_HEADROOM_PER_NODE`    | 512MB | 512MB  | 1GB   |
-| `TRINO_QUERY_MAX_TOTAL_MEMORY`    | 1GB   | 2GB    | 4GB   |
+| `TRINO_QUERY_MAX_TOTAL_MEMORY`    | 1GB   | 2GB    | 5GB   |
 
 ### Application workers
 
@@ -92,9 +94,9 @@ confusion when budgeting memory:
 | `MDB_ICEBERG_WORKERS`              | 2     | 4      | 8     | procrastinate concurrency        |
 | `MDB_COOLING_THREADS_PER_WORKER`   | 2     | 4      | 4     | connectorx threads               |
 | `MDB_DB_POOL_MAX_SIZE`             | 8     | 12     | 16    | connections per process          |
-| `MDB_INGEST_WORKERS`               | 2     | 4      | 4     | processes (ingestion_queue only) |
-| `MDB_INGEST_WORKERS_PER_WORKSPACE` | 1     | 2      | 2     | ingestion slots per workspace    |
-| `MDB_INGEST_THREADS_PER_WORKER`    | 4     | 8      | 8     | parquet writer threads           |
+| `MDB_INGEST_WORKERS`               | 1     | 2      | 2     | processes (ingestion_queue only) |
+| `MDB_INGEST_WORKERS_PER_WORKSPACE` | 1     | 1      | 1     | ingestion slots per workspace    |
+| `MDB_INGEST_THREADS_PER_WORKER`    | 2     | 4      | 4     | parquet writer threads           |
 | `MARPLE_API_WORKERS`               | 2     | 3      | 5     | gunicorn processes               |
 | `MARPLE_PROCRASTINATE_WORKERS`     | 2     | 3      | 5     | procrastinate concurrency        |
 
