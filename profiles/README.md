@@ -103,27 +103,9 @@ confusion when budgeting memory:
 The profiles are one shared manifest; each deployment flavor only uses the
 variables that apply to it. Unused variables are ignored.
 
-| Flavor             | Applies                | Notes                                                                                     |
-| ------------------ | ---------------------- | ----------------------------------------------------------------------------------------- |
-| **marple-db**      | `MDB_*`, `TRINO_*`     | VPC database deployment. `MARPLE_*` are ignored.                                          |
-| **marple-insight** | `MARPLE_*`             | VPC insight deployment. `MDB_*` / `TRINO_*` are ignored.                                  |
-| **marple-on-prem** | all                    | Runs the full stack; the DB API and workers are split (`marple-db` + `marple-db-worker`). |
-| **marple-airgap**  | `MDB_*` (web+worker), `TRINO_*`, `MARPLE_*` | `marple-db` runs `./start.sh all`, so the API and workers share one container. See below. |
-
-### Airgap: combined DB container
-
-The airgap deployment runs the API server and background workers together in the
-single `marple-db` container (`./start.sh all`), so there is no separate
-`marple-db-worker` service and `MDB_WORKER_*` limits do not apply. The
-`MDB_MEM_LIMIT` from the profile (512m in `small`) is only sized for the API
-container in a split deployment and is too small for the combined container.
-
-After appending the profile, add a combined override at the bottom of `.env`,
-for example on an 8 GB laptop:
-
-```bash
-MDB_MEM_LIMIT=2.5g
-```
-
-On a developer laptop with plenty of RAM you can instead set every `*_MEM_LIMIT`
-to `0` (unlimited) and rely on Docker Desktop's own memory ceiling.
+| Flavor             | Applies            | Notes                                                                                                                                                                                             |
+| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **marple-db**      | `MDB_*`, `TRINO_*` | VPC database deployment. `MARPLE_*` are ignored.                                                                                                                                                  |
+| **marple-insight** | `MARPLE_*`         | VPC insight deployment. `MDB_*` / `TRINO_*` are ignored.                                                                                                                                          |
+| **marple-on-prem** | all                | Runs the full stack; the DB API and workers are split (`marple-db` + `marple-db-worker`).                                                                                                         |
+| **marple-airgap**  | all                | Same split layout as on-prem, without an IdP. Trino uses a minimal static config (no password auth); `TRINO_QUERY_*` from the profile are read via env substitution in `trino/config.properties`. |

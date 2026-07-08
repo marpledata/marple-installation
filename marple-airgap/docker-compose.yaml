@@ -1,7 +1,26 @@
 # Resource limits and worker counts come from .env; append a profile from
 # ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
-# NOTE: marple-db runs ./start.sh all (API + workers in one container), so give
-# MDB_MEM_LIMIT the combined budget; MDB_WORKER_* limits do not apply here.
+
+# Shared by the marple-db (web) and marple-db-worker services so their config cannot drift.
+x-mdb-environment: &mdb-environment
+  MDB_DEPLOYMENT: $DEPLOYMENT
+  MDB_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
+  MDB_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
+  MDB_DB_HOST: $POSTGRES_HOST
+  MDB_DB_PORT: $POSTGRES_PORT
+  MDB_DB_NAME: $POSTGRES_DB
+  MDB_DB_USER: $POSTGRES_USER
+  MDB_DB_PASSWORD: $POSTGRES_PASSWORD
+  MDB_IDP_PROVIDER: $IDP_PROVIDER
+  MDB_OIDC_DOMAIN: $OIDC_DOMAIN
+  MDB_OIDC_CLIENT: $OIDC_CLIENT
+  MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
+  MDB_OIDC_SCOPE: $OIDC_SCOPE
+
+# The worker must see the same uploads / scratch as the web container.
+x-mdb-volumes: &mdb-volumes
+  - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+  - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
 
 # Shared by the marple-insight (web) and marple-insight-queue services so their config cannot drift.
 x-insight-environment: &insight-environment
@@ -108,33 +127,25 @@ services:
   marple-db:
     container_name: marple-db
     image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
-    # Single-container deployment: run the API server and the workers together.
-    command: ["./start.sh", "all"]
+    command: ["./start.sh", "web"]
     init: true
     env_file:
       - .env
-    environment:
-      MDB_DEPLOYMENT: $DEPLOYMENT
-      MDB_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
-      MDB_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
-      MDB_DB_HOST: $POSTGRES_HOST
-      MDB_DB_PORT: $POSTGRES_PORT
-      MDB_DB_NAME: $POSTGRES_DB
-      MDB_DB_USER: $POSTGRES_USER
-      MDB_DB_PASSWORD: $POSTGRES_PASSWORD
-      MDB_IDP_PROVIDER: $IDP_PROVIDER
-      MDB_OIDC_DOMAIN: $OIDC_DOMAIN
-      MDB_OIDC_CLIENT: $OIDC_CLIENT
-      MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
-      MDB_OIDC_SCOPE: $OIDC_SCOPE
+    environment: *mdb-environment
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
-    volumes:
-      - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+    volumes: *mdb-volumes
+    healthcheck:
+      # prepare writes trino artefacts to swap during startup; this file appears first.
+      test:
+        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     depends_on:
       - marple-postgres
       - marple-garage
-      - marple-trino
     restart: unless-stopped
     deploy:
       resources:
@@ -143,16 +154,46 @@ services:
           cpus: "${MDB_CPU_LIMIT:-0}"
           memory: "${MDB_MEM_LIMIT:-0}"
 
+  marple-db-worker:
+    container_name: marple-db-worker
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
+    command: ["./start.sh", "worker"]
+    init: true
+    env_file:
+      - .env
+    environment: *mdb-environment
+    volumes: *mdb-volumes
+    depends_on:
+      marple-postgres:
+        condition: service_healthy
+      marple-garage:
+        condition: service_healthy
+      marple-db:
+        # Wait until the web container has finished prepare / schema init.
+        condition: service_healthy
+      marple-trino:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      # The queue startup-reset assumes one worker process per queue; do not scale this out.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_WORKER_CPU_LIMIT:-0}"
+          memory: "${MDB_WORKER_MEM_LIMIT:-0}"
+
   marple-trino:
     container_name: marple-trino
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
     image: trinodb/trino:479
     ports:
       - ${COMPOSE_PORT_TRINO:-9003}:8080
+    env_file:
+      - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
     volumes:
-      # Password authenticator config
+      # Airgap uses a minimal static config (no password auth). See trino/config.properties.
       - ./trino/config.properties:/etc/trino/config.properties:ro
     restart: unless-stopped
     deploy:
