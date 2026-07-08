@@ -84,7 +84,7 @@ services:
 
   marple-insight:
     container_name: marple-insight
-    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.2.1}
+    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.8.0}
     env_file:
       - .env
     environment: *insight-environment
@@ -103,7 +103,7 @@ services:
 
   marple-insight-queue:
     container_name: marple-insight-queue
-    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.2.1}
+    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.8.0}
     env_file:
       - .env
     environment: *insight-environment
