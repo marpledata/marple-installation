@@ -2,6 +2,29 @@
 # ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
 # NOTE: marple-db runs ./start.sh all (API + workers in one container), so give
 # MDB_MEM_LIMIT the combined budget; MDB_WORKER_* limits do not apply here.
+
+# Shared by the marple-insight (web) and marple-insight-queue services so their config cannot drift.
+x-insight-environment: &insight-environment
+  MARPLE_DEPLOYMENT: $DEPLOYMENT
+  MARPLE_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
+  MARPLE_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
+  MARPLE_POSTGRES_HOST: $POSTGRES_HOST
+  MARPLE_POSTGRES_PORT: $POSTGRES_PORT
+  MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
+  MARPLE_POSTGRES_USER: $POSTGRES_USER
+  MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
+  MARPLE_AUTH_PROVIDER: $IDP_PROVIDER
+  MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
+  MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
+  MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
+  MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
+  MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+
+# The queue writes exported files under PATH_ROOT/exports; the web container serves them back.
+x-insight-volumes: &insight-volumes
+  - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
+  - ${COMPOSE_PATH_ROOT}/swap/exports:/srv/marple/exports
+
 services:
   marple-postgres:
     container_name: marple-postgres
@@ -45,28 +68,42 @@ services:
     image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.2.1}
     env_file:
       - .env
-    environment:
-      MARPLE_DEPLOYMENT: $DEPLOYMENT
-      MARPLE_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
-      MARPLE_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
-      MARPLE_POSTGRES_HOST: $POSTGRES_HOST
-      MARPLE_POSTGRES_PORT: $POSTGRES_PORT
-      MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
-      MARPLE_POSTGRES_USER: $POSTGRES_USER
-      MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
-      MARPLE_AUTH_PROVIDER: $IDP_PROVIDER
-      MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
-      MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
-      MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
-      MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
-      MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+    environment: *insight-environment
     ports:
       - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
-    volumes:
-      - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
+    volumes: *insight-volumes
     depends_on:
       - marple-postgres
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MARPLE_CPU_LIMIT:-0}"
+          memory: "${MARPLE_MEM_LIMIT:-0}"
+
+  marple-insight-queue:
+    container_name: marple-insight-queue
+    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.2.1}
+    env_file:
+      - .env
+    environment: *insight-environment
+    working_dir: /marple-core
+    entrypoint: []
+    command: ["poetry", "run", "python", "queue_worker.py"]
+    # Share the web container's network so report/figure exports can reach it on localhost.
+    network_mode: "service:marple-insight"
+    volumes: *insight-volumes
+    depends_on:
+      - marple-insight
+    restart: unless-stopped
+    deploy:
+      # The queue runs one worker process; concurrency is set by MARPLE_PROCRASTINATE_WORKERS.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MARPLE_QUEUE_CPU_LIMIT:-0}"
+          memory: "${MARPLE_QUEUE_MEM_LIMIT:-0}"
 
   marple-db:
     container_name: marple-db

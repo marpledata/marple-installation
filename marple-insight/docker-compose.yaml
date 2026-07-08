@@ -1,6 +1,8 @@
+x-insight-volumes: &insight-volumes
+  - ${DOCKER_PATH_ROOT}:/srv/marple
+  - ${DOCKER_EXPORTS_PATH:-$DOCKER_PATH_ROOT/exports}:/srv/marple/exports
+
 # docker-compose suited for Marple connect deployments (staging nightly)
-# Resource limits and worker counts come from .env; append a profile from
-# ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
 services:
   marple:
     container_name: $MARPLE_CONTAINER_NAME
@@ -9,12 +11,7 @@ services:
       - .env
     ports:
       - $MARPLE_PORT:80 # first port is host
-    volumes:
-      # This should match the PATH_ROOT value in marple-deployment/core/config.yaml
-      - $DOCKER_PATH_ROOT:/srv/marple
-      # Shared with the queue service: the queue writes exported files under
-      # PATH_ROOT/exports, and this container serves them over the /download endpoint.
-      - $DOCKER_PATH_ROOT/exports:/srv/marple/exports
+    volumes: *insight-volumes
     depends_on:
       - postgres
     restart: unless-stopped
@@ -34,11 +31,7 @@ services:
     entrypoint: []
     command: ["poetry", "run", "python", "queue_worker.py"]
     network_mode: "service:marple"
-    volumes:
-      # Must be the same volume as the `marple` service: the queue writes exported
-      # files under PATH_ROOT/exports, and the `marple` container serves them back
-      # over HTTP via the /download endpoint.
-      - $DOCKER_PATH_ROOT:/srv/marple
+    volumes: *insight-volumes
     depends_on:
       - marple
     restart: unless-stopped
