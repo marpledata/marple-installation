@@ -1,21 +1,42 @@
+# Shared by the marple-db (web) and marple-db-worker services so their config cannot drift.
+x-mdb-environment: &mdb-environment
+  MDB_DEPLOYMENT: $DEPLOYMENT
+  MDB_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
+  MDB_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
+  MDB_DB_HOST: $POSTGRES_HOST
+  MDB_DB_PORT: $POSTGRES_PORT
+  MDB_DB_NAME: $POSTGRES_DB
+  MDB_DB_USER: $POSTGRES_USER
+  MDB_DB_PASSWORD: $POSTGRES_PASSWORD
+  MDB_IDP_PROVIDER: $IDP_PROVIDER
+  MDB_OIDC_DOMAIN: $OIDC_DOMAIN
+  MDB_OIDC_CLIENT: $OIDC_CLIENT
+  MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
+  MDB_OIDC_SCOPE: $OIDC_SCOPE
+
+# The worker must see the same uploads / scratch / trino config as the web container.
+x-mdb-volumes: &mdb-volumes
+  - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
+  - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
+
 services:
   postgres:
     container_name: marple-postgres
     env_file:
-    - .env
+      - .env
     healthcheck:
       interval: 30s
       retries: 5
       start_period: 20s
       test:
-      - CMD-SHELL
-      - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
       timeout: 5s
     image: docker.io/library/postgres:18-alpine
     ports:
-    - ${POSTGRES_PORT:-5432}:5432
+      - ${POSTGRES_PORT:-5432}:5432
     volumes:
-    - ${COMPOSE_PATH_ROOT}/postgres:/var/lib/postgresql
+      - ${COMPOSE_PATH_ROOT}/postgres:/var/lib/postgresql
     restart: unless-stopped
 
   garage:
@@ -25,9 +46,9 @@ services:
       - "3900:3900" # S3 API
       - "3903:3903" # Admin API
     volumes:
-    - ./garage.toml:/etc/garage.toml
-    - ${COMPOSE_PATH_ROOT}/garage/data:/var/lib/garage/data
-    - ${COMPOSE_PATH_ROOT}/garage/meta:/var/lib/garage/meta
+      - ./garage/garage.toml:/etc/garage.toml
+      - ${COMPOSE_PATH_ROOT}/garage/data:/var/lib/garage/data
+      - ${COMPOSE_PATH_ROOT}/garage/meta:/var/lib/garage/meta
     healthcheck:
       interval: 30s
       retries: 5
@@ -42,7 +63,7 @@ services:
     ports:
       - ${COMPOSE_PORT_IDP:-8080}:8080
     volumes:
-      - ./dex-config.yaml:/etc/dex/config.yaml
+      - ./idp/dex-config.yaml:/etc/dex/config.yaml
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,7 +87,7 @@ services:
   #   ports:
   #   - ${COMPOSE_PORT_KEYCLOAK:-8080}:8080
   #   volumes:
-  #   - ./marple-realm.json:/opt/keycloak/data/import/marple-realm.json
+  #   - ./idp/marple-realm.json:/opt/keycloak/data/import/marple-realm.json
   #   depends_on:
   #     postgres:
   #       condition: service_healthy
@@ -79,12 +100,14 @@ services:
       - .env
     environment:
       MARPLE_DEPLOYMENT: $DEPLOYMENT
-      MARPLE_POSTGRES_HOST: postgres
+      MARPLE_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
+      MARPLE_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
+      MARPLE_POSTGRES_HOST: $POSTGRES_HOST
       MARPLE_POSTGRES_PORT: $POSTGRES_PORT
       MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
       MARPLE_POSTGRES_USER: $POSTGRES_USER
       MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
-      MARPLE_AUTH_PROVIDER: OAUTH
+      MARPLE_AUTH_PROVIDER: $IDP_PROVIDER
       MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
       MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
       MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
@@ -94,38 +117,70 @@ services:
       - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
     volumes:
       - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
+      - ${COMPOSE_PATH_ROOT}/swap/exports:/srv/marple/exports
     depends_on:
       - postgres
     restart: unless-stopped
 
   marple-db:
     container_name: marple-db
-    image: docker.marpledata.com/library/marpledb:${VERSION_DB:-2.11.1}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
+    command: ["./start.sh", "web"]
+    init: true
     env_file:
       - .env
-    environment:
-      MDB_DEPLOYMENT: $DEPLOYMENT
-      MDB_DB_HOST: postgres
-      MDB_DB_PORT: $POSTGRES_PORT
-      MDB_DB_NAME: $POSTGRES_DB
-      MDB_DB_USER: $POSTGRES_USER
-      MDB_DB_PASSWORD: $POSTGRES_PASSWORD
-      MDB_OIDC_DOMAIN: $OIDC_DOMAIN
-      MDB_OIDC_CLIENT: $OIDC_CLIENT
-      MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
-      MDB_OIDC_SCOPE: $OIDC_SCOPE
-      UVICORN_TIMEOUT_WORKER_HEALTHCHECK: 60 # Startup can take a while
+    environment: *mdb-environment
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
-    volumes:
-      - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
-      - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
+    volumes: *mdb-volumes
+    healthcheck:
+      # prepare_config writes this first, before the slow schema-init/upgrade,
+      # so trino can start as soon as etc/, plugin/ and the spill dir exist.
+      test:
+        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     depends_on:
       - postgres
       - garage
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_CPU_LIMIT:-0}"
+          memory: "${MDB_MEM_LIMIT:-0}"
 
-  
+  marple-db-worker:
+    container_name: marple-db-worker
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.8.0}
+    command: ["./start.sh", "worker"]
+    init: true
+    env_file:
+      - .env
+    environment: *mdb-environment
+    volumes: *mdb-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+      marple-db:
+        # Wait until the web container's `prepare` has written the trino config.
+        condition: service_healthy
+      trino:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      # The queue startup-reset assumes one worker process per queue; do not scale this out.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_WORKER_CPU_LIMIT:-0}"
+          memory: "${MDB_WORKER_MEM_LIMIT:-0}"
+
   trino:
     container_name: marple-trino
     # Keep this pinned to the SPI version used by marpledb-trino-auth (see marpledb-trino-auth/pom.xml)
@@ -136,8 +191,25 @@ services:
       - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
+      # The baked password-authenticator.properties uses ${ENV:MDB_DB_*}, but on-prem's
+      # .env only defines POSTGRES_*. Map them here (the marple-db service does the same).
+      MDB_DB_HOST: $POSTGRES_HOST
+      MDB_DB_PORT: $POSTGRES_PORT
+      MDB_DB_NAME: $POSTGRES_DB
+      MDB_DB_USER: $POSTGRES_USER
+      MDB_DB_PASSWORD: $POSTGRES_PASSWORD
     volumes:
-      - ./trino/etc:/etc/trino
-      - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
-      - ${COMPOSE_PATH_ROOT}/swap/trino:/data/spill
+      # The backend writes the Trino config (etc/, plugin/, spill/) to the shared swap volume.
+      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/etc:/etc/trino
+      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
+      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/spill:/data/spill
+    depends_on:
+      marple-db:
+        condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${TRINO_CPU_LIMIT:-0}"
+          memory: "${TRINO_MEM_LIMIT:-0}"

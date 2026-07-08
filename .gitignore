@@ -1,2 +1,5 @@
 marple-airgap/data/
 marple-on-prem/data/
+
+# Local environment files (may contain secrets); ship only .env.example
+.env

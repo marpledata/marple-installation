@@ -25,7 +25,7 @@ env:
   - name: MARPLE_DEPLOYMENT
     value: "TODO" # Ask Marple team, e.g. Your-company
   - name: MARPLE_PUBLIC_URL
-    value: "TODO" # e.g. marple.yourcompany.com
+    value: "TODO" # e.g. https://marple.yourcompany.com
   - name: MARPLE_AUTH_PROVIDER
     value: OFFLINE
   - name: MARPLE_OAUTH_DOMAIN
@@ -50,6 +50,12 @@ env:
     value: "" # has to be a group from your IdP
   - name: MARPLE_POSTMARK_SEND_MAIL
     value: true # send emails on user invites
+  - name: MARPLE_AI_API_KEY
+    value: "" # Optional, enables AI plot generation
+  - name: MARPLE_AI_BASE_URL
+    value: "https://api.openai.com/v1"
+  - name: MARPLE_AI_MODEL
+    value: "gpt-4o-mini"
 # container sizing
 resources:
   cpu: "4"

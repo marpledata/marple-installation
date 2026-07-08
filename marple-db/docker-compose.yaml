@@ -1,26 +1,76 @@
 services:
-  marpledb:
+  marple-db:
     container_name: $MDB_CONTAINER_NAME
-    image: docker.marpledata.com/library/marpledb:$MDB_VERSION
+    image: docker.marpledata.com/library/marple-db:$MDB_VERSION
+    command: ["./start.sh", "web"]
+    init: true
     env_file:
-      - .env # passes everyting from .env on to container
+      - .env
     ports:
-      - $MDB_PORT:80 # first port is host
+      - $MDB_PORT:80
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
-      - ./trino/etc/rules.json:$MDB_TRINO_PATH_RULES
-      - .usage-automation.json:/etc/marple/.usage-automation.json
+      - $DOCKER_PATH_ROOT/.usage-automation.json:/etc/marple/.usage-automation.json
+    healthcheck:
+      # prepare_config writes this first, before the slow schema-init/upgrade,
+      # so trino can start as soon as etc/, plugin/ and the spill dir exist.
+      test:
+        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_CPU_LIMIT:-0}"
+          memory: "${MDB_MEM_LIMIT:-0}"
+
+  marple-db-worker:
+    container_name: ${MDB_WORKER_CONTAINER_NAME:-marple-db-worker}
+    image: docker.marpledata.com/library/marple-db:$MDB_VERSION
+    command: ["./start.sh", "worker"]
+    init: true
+    env_file:
+      - .env
+    # Must see the same uploads / scratch / trino config as the web container.
+    volumes:
+      - $DOCKER_PATH_ROOT:/srv/marpledb
+    depends_on:
+      marple-db:
+        # Wait until the web container's `prepare` has written the trino config.
+        condition: service_healthy
+      trino:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      # The queue startup-reset assumes one worker process per queue; do not scale this out.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MDB_WORKER_CPU_LIMIT:-0}"
+          memory: "${MDB_WORKER_MEM_LIMIT:-0}"
 
   trino:
     container_name: $TRINO_CONTAINER_NAME
     image: trinodb/trino:479
     env_file:
       - .env
+    depends_on:
+      marple-db:
+        condition: service_healthy
     ports:
       - "$TRINO_PORT:8080"
     volumes:
-      - ./trino/etc:/etc/trino
-      - ./trino/marpledb-trino-auth-0.1.0.jar:/usr/lib/trino/plugin/marpledb/marpledb-trino-auth-0.1.0.jar:ro
-      - $DOCKER_PATH_ROOT/swap/trino:/data/spill
+      - $DOCKER_PATH_ROOT/swap/trino/etc:/etc/trino
+      - $DOCKER_PATH_ROOT/swap/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
+      - $DOCKER_PATH_ROOT/swap/trino/spill:/data/spill
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${TRINO_CPU_LIMIT:-0}"
+          memory: "${TRINO_MEM_LIMIT:-0}"
