@@ -135,14 +135,6 @@ services:
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes: *mdb-volumes
-    healthcheck:
-      # prepare writes trino artefacts to swap during startup; this file appears first.
-      test:
-        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
     depends_on:
       - marple-postgres
       - marple-garage
@@ -169,8 +161,7 @@ services:
       marple-garage:
         condition: service_healthy
       marple-db:
-        # Wait until the web container has finished prepare / schema init.
-        condition: service_healthy
+        condition: service_started
       marple-trino:
         condition: service_started
     restart: unless-stopped

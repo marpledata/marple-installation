@@ -168,15 +168,6 @@ services:
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes: *mdb-volumes
-    healthcheck:
-      # prepare_config writes this first, before the slow schema-init/upgrade,
-      # so trino can start as soon as etc/, plugin/ and the spill dir exist.
-      test:
-        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
     depends_on:
       - postgres
       - garage
@@ -203,8 +194,7 @@ services:
       garage:
         condition: service_healthy
       marple-db:
-        # Wait until the web container's `prepare` has written the trino config.
-        condition: service_healthy
+        condition: service_started
       trino:
         condition: service_started
     restart: unless-stopped
@@ -240,7 +230,7 @@ services:
       - ${COMPOSE_PATH_ROOT}/swap/imports/trino/spill:/data/spill
     depends_on:
       marple-db:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     deploy:
       resources:
