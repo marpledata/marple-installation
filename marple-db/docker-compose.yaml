@@ -1,3 +1,5 @@
+# Resource limits and worker counts come from .env; append a profile from
+# ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
 services:
   marple-db:
     container_name: $MDB_CONTAINER_NAME
@@ -11,15 +13,6 @@ services:
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
       - $DOCKER_PATH_ROOT/.usage-automation.json:/etc/marple/.usage-automation.json
-    healthcheck:
-      # prepare_config writes this first, before the slow schema-init/upgrade,
-      # so trino can start as soon as etc/, plugin/ and the spill dir exist.
-      test:
-        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
     restart: unless-stopped
     deploy:
       resources:
@@ -40,8 +33,7 @@ services:
       - $DOCKER_PATH_ROOT:/srv/marpledb
     depends_on:
       marple-db:
-        # Wait until the web container's `prepare` has written the trino config.
-        condition: service_healthy
+        condition: service_started
       trino:
         condition: service_started
     restart: unless-stopped
@@ -60,7 +52,7 @@ services:
       - .env
     depends_on:
       marple-db:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "$TRINO_PORT:8080"
     volumes:

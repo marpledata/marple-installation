@@ -17,13 +17,28 @@ Want to set up your own IdP on Marple? Follow the readme of marple-on-prem.
 
 ## 2. Start Docker Compose Services
 
-Rename the `.env.example` file to `.env` and set the required fields:
+Create your `.env` from the example and append a resource profile that matches your host:
+
+```bash
+cp .env.example .env
+cat ../profiles/medium.env >> .env
+```
+
+Then set the required fields in `.env`:
 
 - `DEPLOYMENT`
-- `AWS_ACCESS_KEY` This will be generated later
-- `AWS_SECRET_KEY` This will be generated later
+- `MDB_AWS_ACCESS_KEY` — generated during Garage setup (see below)
+- `MDB_AWS_SECRET_KEY` — generated during Garage setup (see below)
 - Check all variables flagged with "TODO"
 - Other variables are optional
+
+The stack runs these application containers:
+
+- `marple-insight` — Insight web UI
+- `marple-insight-queue` — background jobs (exports, maintenance)
+- `marple-db` — Marple DB API
+- `marple-db-worker` — ingestion and data-processing workers
+- `marple-trino` — query engine (minimal static config in `trino/config.properties`, no password auth)
 
 Pull and start the docker containers by executing
 
@@ -73,8 +88,8 @@ If using the local object storage (Garage), you'll need to configure it when run
   garage bucket allow --read --write --owner mdb --key mdb-key
   ```
 - Copy the generated bucket Key ID & Secret key to [.env](.env)
-  - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
-  - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
+  - `MDB_AWS_ACCESS_KEY` = `Key ID`
+  - `MDB_AWS_SECRET_KEY` = `Secret key`
 - Restart the containers to use the correct env variables:
   ```bash
   docker compose down
@@ -104,6 +119,7 @@ In case you like to set up DNS + nginx:
 
 ## 6. Troubleshooting
 
-- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
+- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took too long to start). In this case, restart the `marple-db` container.
+- If ingestion or background processing stalls, check `docker compose logs marple-db-worker`.
 - `docker compose logs SERVICE` to inspect the docker logs
 - Use a `.wslconfig` file on Windows to configure the amount of RAM available

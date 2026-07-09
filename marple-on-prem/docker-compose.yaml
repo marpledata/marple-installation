@@ -19,6 +19,28 @@ x-mdb-volumes: &mdb-volumes
   - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
   - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
 
+# Shared by the marple-insight (web) and marple-insight-queue services so their config cannot drift.
+x-insight-environment: &insight-environment
+  MARPLE_DEPLOYMENT: $DEPLOYMENT
+  MARPLE_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
+  MARPLE_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
+  MARPLE_POSTGRES_HOST: $POSTGRES_HOST
+  MARPLE_POSTGRES_PORT: $POSTGRES_PORT
+  MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
+  MARPLE_POSTGRES_USER: $POSTGRES_USER
+  MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
+  MARPLE_AUTH_PROVIDER: $IDP_PROVIDER
+  MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
+  MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
+  MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
+  MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
+  MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+
+# The queue writes exported files under PATH_ROOT/exports; the web container serves them back.
+x-insight-volumes: &insight-volumes
+  - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
+  - ${COMPOSE_PATH_ROOT}/swap/exports:/srv/marple/exports
+
 services:
   postgres:
     container_name: marple-postgres
@@ -95,32 +117,45 @@ services:
 
   marple-insight:
     container_name: marple-insight
-    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-1.21.1}
+    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.8.0}
     env_file:
       - .env
-    environment:
-      MARPLE_DEPLOYMENT: $DEPLOYMENT
-      MARPLE_LOG_SHOULD_UPLOAD: $LOG_SHOULD_UPLOAD
-      MARPLE_LICENSING_SERVER_ENABLED: $LICENSING_SERVER_ENABLED
-      MARPLE_POSTGRES_HOST: $POSTGRES_HOST
-      MARPLE_POSTGRES_PORT: $POSTGRES_PORT
-      MARPLE_POSTGRES_DB_NAME: $POSTGRES_DB
-      MARPLE_POSTGRES_USER: $POSTGRES_USER
-      MARPLE_POSTGRES_PW: $POSTGRES_PASSWORD
-      MARPLE_AUTH_PROVIDER: $IDP_PROVIDER
-      MARPLE_OAUTH_DOMAIN: $OIDC_DOMAIN
-      MARPLE_OAUTH_ISSUER: $OIDC_ISSUER
-      MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
-      MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
-      MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+    environment: *insight-environment
     ports:
       - ${COMPOSE_PORT_INSIGHT:-80}:80 # first port is host
-    volumes:
-      - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
-      - ${COMPOSE_PATH_ROOT}/swap/exports:/srv/marple/exports
+    volumes: *insight-volumes
     depends_on:
       - postgres
     restart: unless-stopped
+    deploy:
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MARPLE_CPU_LIMIT:-0}"
+          memory: "${MARPLE_MEM_LIMIT:-0}"
+
+  marple-insight-queue:
+    container_name: marple-insight-queue
+    image: docker.marpledata.com/library/marple-insight:${VERSION_INSIGHT:-3.8.0}
+    env_file:
+      - .env
+    environment: *insight-environment
+    working_dir: /marple-core
+    entrypoint: []
+    command: ["poetry", "run", "python", "queue_worker.py"]
+    # Share the web container's network so report/figure exports can reach it on localhost.
+    network_mode: "service:marple-insight"
+    volumes: *insight-volumes
+    depends_on:
+      - marple-insight
+    restart: unless-stopped
+    deploy:
+      # The queue runs one worker process; concurrency is set by MARPLE_PROCRASTINATE_WORKERS.
+      resources:
+        # Unlimited by default; set the *_LIMIT vars in .env to cap (see .env.example for hints).
+        limits:
+          cpus: "${MARPLE_QUEUE_CPU_LIMIT:-0}"
+          memory: "${MARPLE_QUEUE_MEM_LIMIT:-0}"
 
   marple-db:
     container_name: marple-db
@@ -133,15 +168,6 @@ services:
     ports:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes: *mdb-volumes
-    healthcheck:
-      # prepare_config writes this first, before the slow schema-init/upgrade,
-      # so trino can start as soon as etc/, plugin/ and the spill dir exist.
-      test:
-        ["CMD", "test", "-f", "/srv/marpledb/swap/trino/etc/config.properties"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
     depends_on:
       - postgres
       - garage
@@ -168,8 +194,7 @@ services:
       garage:
         condition: service_healthy
       marple-db:
-        # Wait until the web container's `prepare` has written the trino config.
-        condition: service_healthy
+        condition: service_started
       trino:
         condition: service_started
     restart: unless-stopped
@@ -205,7 +230,7 @@ services:
       - ${COMPOSE_PATH_ROOT}/swap/imports/trino/spill:/data/spill
     depends_on:
       marple-db:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     deploy:
       resources:
