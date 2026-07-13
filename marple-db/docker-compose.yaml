@@ -8,6 +8,7 @@ services:
     init: true
     env_file:
       - .env
+      - ../.env.profile
     ports:
       - $MDB_PORT:80
     volumes:
@@ -28,6 +29,7 @@ services:
     init: true
     env_file:
       - .env
+      - ../.env.profile
     # Must see the same uploads / scratch / trino config as the web container.
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
@@ -50,6 +52,7 @@ services:
     image: trinodb/trino:479
     env_file:
       - .env
+      - ../.env.profile
     depends_on:
       marple-db:
         condition: service_started
