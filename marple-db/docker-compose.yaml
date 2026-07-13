@@ -1,5 +1,5 @@
-# Resource limits and worker counts come from .env; append a profile from
-# ../profiles/ when creating .env (see .env.example and ../profiles/README.md).
+# Resource limits and worker counts come from .env and ../.env.profile (shared
+# with marple-insight/; see .env.example and ../profiles/README.md).
 services:
   marple-db:
     container_name: $MDB_CONTAINER_NAME

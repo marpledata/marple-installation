@@ -29,11 +29,41 @@ spikes (Trino queries, Iceberg commit bursts, report/export browsers).
 
 ## How to apply a profile
 
-Profiles are merged into your `.env` at provisioning time. The deployment itself
-still only needs `docker-compose.yaml` and `.env`.
+### VPC split (`marple-db/` + `marple-insight/`)
+
+These deployments run as separate Docker Compose stacks but share one resource
+profile. Create `.env.profile` once at the **parent** of both directories (the
+repository root if you keep the default layout). Each stack still has its own
+`.env` for deployment-specific secrets; `docker-compose.yaml` loads both files.
 
 ```bash
-# From a deployment directory (e.g. marple-db/, marple-insight/, marple-on-prem/)
+# From the repository root (parent of marple-db/ and marple-insight/)
+cp profiles/small.env .env.profile   # or medium.env / large.env
+
+# marple-db stack
+cd marple-db
+cp .env.example .env
+# fill in MDB_* / TRINO_* secrets, then:
+docker compose up -d
+
+# marple-insight stack (same host or another VM — reuse the same .env.profile)
+cd ../marple-insight
+cp .env.example .env
+# fill in MARPLE_* secrets, then:
+docker compose up -d
+```
+
+Copy `.env.profile` to every host that runs one of these stacks so both sides
+use the same limits and worker counts. To switch profiles later, replace
+`.env.profile` and restart both stacks.
+
+### Single-stack (`marple-on-prem/`, `marple-airgap/`)
+
+Append a profile into `.env` at provisioning time. The deployment only needs
+`docker-compose.yaml` and `.env`.
+
+```bash
+# From the deployment directory
 cp .env.example .env
 cat ../profiles/small.env >> .env
 # then fill in the deployment secrets at the top of .env and start:
@@ -111,9 +141,9 @@ confusion when budgeting memory:
 The profiles are one shared manifest; each deployment flavor only uses the
 variables that apply to it. Unused variables are ignored.
 
-| Flavor             | Applies            | Notes                                                                                                                                                                                             |
-| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **marple-db**      | `MDB_*`, `TRINO_*` | VPC database deployment. `MARPLE_*` are ignored.                                                                                                                                                  |
-| **marple-insight** | `MARPLE_*`         | VPC insight deployment. `MDB_*` / `TRINO_*` are ignored.                                                                                                                                          |
-| **marple-on-prem** | all                | Runs the full stack; the DB API and workers are split (`marple-db` + `marple-db-worker`).                                                                                                         |
-| **marple-airgap**  | all                | Same split layout as on-prem, without an IdP. Trino uses a minimal static config (no password auth); `TRINO_QUERY_*` from the profile are read via env substitution in `trino/config.properties`. |
+| Flavor             | Applies            | Profile file                         | Notes                                                                                                                                                                                             |
+| ------------------ | ------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **marple-db**      | `MDB_*`, `TRINO_*` | shared `../.env.profile`             | VPC database deployment. `MARPLE_*` are ignored.                                                                                                                                                  |
+| **marple-insight** | `MARPLE_*`         | shared `../.env.profile`             | VPC insight deployment. `MDB_*` / `TRINO_*` are ignored. Use the same `.env.profile` as the matching `marple-db` stack.                                                                           |
+| **marple-on-prem** | all                | appended to `.env`                   | Runs the full stack; the DB API and workers are split (`marple-db` + `marple-db-worker`).                                                                                                         |
+| **marple-airgap**  | all                | appended to `.env`                   | Same split layout as on-prem, without an IdP. Trino uses a minimal static config (no password auth); `TRINO_QUERY_*` from the profile are read via env substitution in `trino/config.properties`. |
