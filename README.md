@@ -74,9 +74,9 @@ Minimal specifications
    - Credentials for the docker registry
    - A deployment name
 2. Download `.env.example` and `docker-compose.yaml` from the relevant deployment directory in this repository
-3. Create your `.env` from the example and append a resource profile that matches your host:
-   - `cp .env.example .env`
-   - `cat ../profiles/small.env >> .env` (or `medium.env` / `large.env`; see [`profiles/README.md`](profiles/README.md))
+3. Apply a resource profile that matches your host (see [`profiles/README.md`](profiles/README.md)):
+   - **VPC split** (`marple-db/` and `marple-insight/` as separate stacks): create a shared `.env.profile` at the repository root, e.g. `cp profiles/medium.env .env.profile`, then `cp .env.example .env` in each deployment directory
+   - **Single-stack** (`marple-on-prem/`, `marple-airgap/`, or standalone insight): `cp .env.example .env` and append a profile, e.g. `cat ../profiles/small.env >> .env`
 4. Edit `.env`, and set
    - `MARPLE_DEPLOYMENT` = the deployment name you got from the Marple team
    - `MARPLE_PUBLIC_URL` = the hostname where the application will be reachable
