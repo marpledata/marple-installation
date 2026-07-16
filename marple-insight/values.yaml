@@ -56,10 +56,34 @@ env:
     value: "https://api.openai.com/v1"
   - name: MARPLE_AI_MODEL
     value: "gpt-4o-mini"
-# container sizing
-resources:
-  cpu: "4"
-  memory: "8Gi"
+  - name: MARPLE_API_WORKERS
+    value: "4" # 0 = auto (2*CPU+1). Profile hints: small=2, medium=3, large=5
+  - name: MARPLE_PROCRASTINATE_WORKERS
+    value: "4" # queue export concurrency. Profile hints: small=2, medium=3, large=5
+
+# API pod sizing (nginx + gunicorn)
+api:
+  requests:
+    memory: "4Gi"
+    # cpu omitted = no CPU request
+  limits:
+    memory: "4Gi"
+    # cpu omitted = no CPU limit
+
+# queue worker pod (background exports and maintenance jobs)
+queue:
+  resources:
+    requests:
+      memory: "4Gi"
+    limits:
+      memory: "4Gi"
+
+# Helm/K8s only: Playwright export URL for the queue pod (figure PNGs, report PDFs).
+# The queue pod cannot use localhost; it must reach the API via the cluster Service.
+# Leave empty to default to http://<release>-marple (requires service.enabled: true).
+# Docker Compose deployments do not need this (queue shares the API network namespace).
+export:
+  serverUrl: ""
 
 # persistent volume to store files
 volume:
@@ -67,9 +91,11 @@ volume:
   className: managed-csi
   hostPath: false
 
-# service configuration for exposing HTTP traffic
+# API Service (ClusterIP, internal only). Required for queue pod exports (Playwright
+# reaches the API at http://<release>-marple). External access still uses Ingress
+# or set type to NodePort/LoadBalancer.
 service:
-  enabled: false
+  enabled: true
   # Service type: ClusterIP (internal), NodePort (limited external), LoadBalancer (full external)
   type: ClusterIP
   # NodePort for NodePort service type (default: 30080)
