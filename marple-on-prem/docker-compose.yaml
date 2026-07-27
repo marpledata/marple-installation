@@ -15,9 +15,11 @@ x-mdb-environment: &mdb-environment
   MDB_OIDC_SCOPE: $OIDC_SCOPE
 
 # The worker must see the same uploads / scratch / trino config as the web container.
+# All temporary/scratch data lives under COMPOSE_PATH_SWAP (default: COMPOSE_PATH_ROOT/swap),
+# so it can be pointed at a dedicated scratch disk via .env.
 x-mdb-volumes: &mdb-volumes
   - ${COMPOSE_PATH_ROOT}/db:/srv/marpledb
-  - ${COMPOSE_PATH_ROOT}/swap/imports:/srv/marpledb/swap
+  - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports:/srv/marpledb/swap
 
 # Shared by the marple-insight (web) and marple-insight-queue services so their config cannot drift.
 x-insight-environment: &insight-environment
@@ -39,7 +41,7 @@ x-insight-environment: &insight-environment
 # The queue writes exported files under PATH_ROOT/exports; the web container serves them back.
 x-insight-volumes: &insight-volumes
   - ${COMPOSE_PATH_ROOT}/insight:/srv/marple
-  - ${COMPOSE_PATH_ROOT}/swap/exports:/srv/marple/exports
+  - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/exports:/srv/marple/exports
 
 services:
   postgres:
@@ -225,9 +227,9 @@ services:
       MDB_DB_PASSWORD: $POSTGRES_PASSWORD
     volumes:
       # The backend writes the Trino config (etc/, plugin/, spill/) to the shared swap volume.
-      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/etc:/etc/trino
-      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
-      - ${COMPOSE_PATH_ROOT}/swap/imports/trino/spill:/data/spill
+      - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/etc:/etc/trino
+      - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
+      - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/spill:/data/spill
     depends_on:
       marple-db:
         condition: service_started

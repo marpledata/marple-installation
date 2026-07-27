@@ -31,35 +31,22 @@ All three are configured via `.env` (`POSTGRES_*`, `MDB_AWS_*`, `OIDC_*` / `IDP_
   - Insight (e.g. https://insight.marple.example.com)
   - DB (e.g. https://db.marple.example.com)
   - Trino (e.g. https://trino.marple.example.com)
-  - Dex/Keycloack (optional, in case you don't bring your own IdP)
-- Configure routing & certificates. E.G. using `nginx` & `certbot` on Ubuntu:
+  - Dex/Keycloak (optional, in case you don't bring your own IdP)
+- Configure routing & certificates. E.g. using `nginx` & `certbot` on Ubuntu:
   - Enter the new DNS entries into `marple.conf`
-  - Add marple `marple.conf` to `/etc/nginx/sites-enabled/marple.conf`
+  - Add `marple.conf` to `/etc/nginx/sites-enabled/marple.conf`
   - `systemctl enable nginx`
   - `systemctl start nginx`
   - `snap install --classic certbot`
   - `sudo /snap/bin/certbot --nginx`
 
-## 3. Trino Settings
-
-Trino's configuration (the `etc/` config, the `marpledb` auth plugin and the `rules.json`
-access-control rules) is baked into the `marple-db` image. On startup the backend deploys it to
-the shared swap volume at `$COMPOSE_PATH_ROOT/swap/imports/trino/{etc,plugin,spill}`, and the
-Trino container mounts it from there. There is no `trino/` directory to ship or edit by hand.
-
-If the Trino container cannot read its config or write its spill directory, grant access to that
-deployed directory (after the `marple-db` container has started and written it). Change the path
-to match `COMPOSE_PATH_ROOT` in your `.env`:
-
-- `chmod -R 777 $COMPOSE_PATH_ROOT/swap/imports/trino`
-
-## 4. Start Docker Services
+## 3. Start Docker Services
 
 Rename the `.env.example` file to `.env` and set the required fields:
 
 - `DEPLOYMENT`
-- `AWS_ACCESS_KEY` This will be generated later
-- `AWS_SECRET_KEY` This will be generated later
+- `MDB_AWS_ACCESS_KEY` This will be generated later
+- `MDB_AWS_SECRET_KEY` This will be generated later
 - Check all variables flagged with "TODO"
 - Other variables are optional
 
@@ -71,11 +58,11 @@ docker compose ps
 
 ### a. Local Object Storage Configuration (Garage)
 
-_Can be skipped if using a seperate S3-compatible blob storage_
+_Can be skipped if using a separate S3-compatible blob storage_
 
 If using the local object storage (Garage), you'll need to configure it when running Marple for the first time.
 
-- Create a Temporary alias for running commands in the garage container:
+- Create a temporary alias for running commands in the garage container:
   ```bash
   alias garage="docker exec -ti marple-garage /garage"
   ```
@@ -95,14 +82,14 @@ If using the local object storage (Garage), you'll need to configure it when run
   ```bash
   garage bucket create mdb
   ```
-- Generate a key and copy to Key ID & Secret key to [.env](.env)
+- Generate a key and copy the Key ID & Secret key into [.env](.env)
 
   ```bash
   garage key create mdb-key
   ```
 
-  - [./.env](.env)/`AWS_ACCESS_KEY` = `Key ID`
-  - [./.env](.env)/`AWS_SECRET_KEY` = `Secret key`
+  - [./.env](.env)/`MDB_AWS_ACCESS_KEY` = `Key ID`
+  - [./.env](.env)/`MDB_AWS_SECRET_KEY` = `Secret key`
 
 - Allow the newly created key to manage the `mdb` bucket
   ```bash
@@ -119,7 +106,7 @@ If using the local object storage (Garage), you'll need to configure it when run
 _Can be skipped if using 'OFFLINE' auth_
 
 1. Dex:
-   - Change the variables with # TODO in the dex-config.yaml file
+   - Change the variables with # TODO in the `dex-config.yaml` file
    - Default user/pass = admin@marpledata.com/password
 2. Keycloak:
    - Find/replace `http://localhost` with your preferred redirect URL
@@ -135,9 +122,9 @@ _Can be skipped if using 'OFFLINE' auth_
 ### c. Various
 
 - Configure S3 CORS (Necessary to upload files via the DB UI)
-  - `docker run marple-db poetry run python configure-s3-cors -o https://db.marple.example.com`
+  - `docker exec -it marple-db poetry run python configure-upload-cors -o https://db.marple.example.com`
 
-## 5. Set up your workspaces
+## 4. Set up your workspaces
 
 - Open Marple DB UI in the browser (https://db.marple.example.com)
   - Upload a license file as provided by Marple (if licensing server is disabled)
@@ -152,14 +139,14 @@ _Can be skipped if using 'OFFLINE' auth_
 
 - Upload a file and verify you can visualise it in Insight
 
-## 6. Configuration
+## 5. Configuration
 
 - Most settings are configurable via the `.env` file
 - Dex settings are in `dex-config.yaml`
 - Keycloak settings can be edited in `marple-realm.json`
   - Find/replace `http://localhost` with your preferred redirect URL
 
-## 7. Backups
+## 6. Backups
 
 If you do decide to use the bundled Postgres and/or Garage, set up at least a daily backup. **Copying the data directory while the containers are running can produce an unrestorable Postgres backup** — use `pg_dumpall` for the database and a `tar` snapshot for object storage. Save the script as e.g. `/usr/local/bin/marple-backup.sh`:
 
@@ -219,8 +206,21 @@ gunzip -c "$DAILY/postgres.sql.gz" \
 docker compose up -d
 ```
 
-## 8. Troubleshooting
+## 7. Troubleshooting
 
-- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took to long to start). In this case, restart the marple-db container.
+- If you are stuck on “You are not part of any workspace” in DB, the database might not be initialised correctly (happens if the postgres container took too long to start). In this case, restart the marple-db container.
 - `docker compose logs SERVICE` to inspect the docker logs
 - Use a `.wslconfig` file on Windows to configure the amount of RAM available
+- If the docker logs show `Self-signed certificate` errors (common when a corporate proxy or internal CA intercepts TLS), mount the host's CA certificates into the containers and point `REQUESTS_CA_BUNDLE` at the bundle. On Debian/Ubuntu hosts, install your internal CA with `update-ca-certificates` first; it then ends up in `/etc/ssl/certs/ca-certificates.crt`. In `docker-compose.yaml`, the Marple services share their volumes and environment via the `x-*` blocks at the top of the file, so add it there (once for Insight, once for DB):
+
+  ```yaml
+  x-mdb-volumes: &mdb-volumes # ... existing entries ...
+    - /etc/ssl/certs:/etc/ssl/certs:ro
+
+  x-mdb-environment: &mdb-environment # ... existing entries ...
+    REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+  ```
+
+  Repeat the same for `x-insight-volumes` / `x-insight-environment`, then recreate the containers with `docker compose up -d`.
+
+  Note: `REQUESTS_CA_BUNDLE` must point at a bundle _file_ (or an OpenSSL-hashed directory, i.e. one processed by `c_rehash`/`update-ca-certificates`).
