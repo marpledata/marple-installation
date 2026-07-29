@@ -98,7 +98,7 @@ Minimal specifications
 ### Updating
 
 1. Edit `docker-compose.yaml`
-2. Set the marple container version to the latest version, e.g. `3.8.0`
+2. Set the marple container version to the latest version, e.g. `3.9.0`
 3. `docker compose pull`
 4. `docker compose up -d`
 5. Verify that Marple is the latest version by checking the "Settings" → "About" screen
