@@ -161,7 +161,7 @@ services:
 
   marple-db:
     container_name: marple-db
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.0}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.2}
     command: ["./start.sh", "web"]
     init: true
     env_file:
@@ -175,8 +175,7 @@ services:
         condition: service_healthy
       garage:
         condition: service_healthy
-    # Healthy only after serve finishes trino.reset() / wait_for_dependencies and gunicorn is up.
-    # start_period must cover prepare + Trino restarts (in-app wait is up to 5 minutes).
+    # start_period covers prepare + Trino boot (in-app wait up to 5 min).
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:8000/api/v1/health"]
       interval: 5s
@@ -193,7 +192,7 @@ services:
 
   marple-db-worker:
     container_name: marple-db-worker
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.0}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.2}
     command: ["./start.sh", "worker"]
     init: true
     env_file:
@@ -205,8 +204,6 @@ services:
         condition: service_healthy
       garage:
         condition: service_healthy
-      # Wait for API healthy (implies Trino was reachable during boot). Do NOT make
-      # trino depend on marple-db healthy — that would deadlock (API waits on Trino).
       marple-db:
         condition: service_healthy
       trino:
@@ -242,8 +239,7 @@ services:
       - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/etc:/etc/trino
       - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
       - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/spill:/data/spill
-    # service_started only: marple-db prepare writes Trino config, then serve waits for
-    # Trino before the API becomes healthy. Healthy here would deadlock startup.
+    # service_started only — healthy would deadlock (API waits on Trino during boot).
     depends_on:
       marple-db:
         condition: service_started

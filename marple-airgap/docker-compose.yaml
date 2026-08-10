@@ -126,7 +126,7 @@ services:
 
   marple-db:
     container_name: marple-db
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.0}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.2}
     command: ["./start.sh", "web"]
     init: true
     env_file:
@@ -140,8 +140,7 @@ services:
         condition: service_healthy
       marple-garage:
         condition: service_healthy
-    # Healthy only after serve finishes wait_for_dependencies and gunicorn is up.
-    # start_period must cover prepare + Trino coming up (in-app wait is up to 5 minutes).
+    # start_period covers prepare + Trino boot (in-app wait up to 5 min).
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://127.0.0.1:8000/api/v1/health"]
       interval: 5s
@@ -158,7 +157,7 @@ services:
 
   marple-db-worker:
     container_name: marple-db-worker
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.0}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.2}
     command: ["./start.sh", "worker"]
     init: true
     env_file:
@@ -170,7 +169,6 @@ services:
         condition: service_healthy
       marple-garage:
         condition: service_healthy
-      # Wait for API healthy (implies deps were reachable during boot).
       marple-db:
         condition: service_healthy
       marple-trino:
@@ -194,8 +192,7 @@ services:
       - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
-    # No depends_on marple-db: config is static here. The API waits on Trino before
-    # becoming healthy, so depending the other way on healthy would deadlock.
+    # No depends_on marple-db — healthy the other way would deadlock (API waits on Trino).
     volumes:
       # Airgap uses a minimal static config (no password auth). See trino/config.properties.
       - ./trino/config.properties:/etc/trino/config.properties:ro
