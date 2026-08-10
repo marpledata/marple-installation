@@ -13,6 +13,14 @@ services:
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
       - $DOCKER_PATH_ROOT/.usage-automation.json:/etc/marple/.usage-automation.json
+    # Healthy only after serve finishes trino.reset() / wait_for_dependencies and gunicorn is up.
+    # start_period must cover prepare + Trino restarts (in-app wait is up to 5 minutes).
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 300s
     restart: unless-stopped
     deploy:
       resources:
@@ -32,8 +40,10 @@ services:
     volumes:
       - $DOCKER_PATH_ROOT:/srv/marpledb
     depends_on:
+      # Wait for API healthy (implies Trino was reachable during boot). Do NOT make
+      # trino depend on marple-db healthy — that would deadlock (API waits on Trino).
       marple-db:
-        condition: service_started
+        condition: service_healthy
       trino:
         condition: service_started
     restart: unless-stopped
@@ -50,6 +60,8 @@ services:
     image: trinodb/trino:479
     env_file:
       - .env
+    # service_started only: marple-db prepare writes Trino config, then serve waits for
+    # Trino before the API becomes healthy. Healthy here would deadlock startup.
     depends_on:
       marple-db:
         condition: service_started

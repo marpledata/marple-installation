@@ -171,8 +171,18 @@ services:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes: *mdb-volumes
     depends_on:
-      - postgres
-      - garage
+      postgres:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+    # Healthy only after serve finishes trino.reset() / wait_for_dependencies and gunicorn is up.
+    # start_period must cover prepare + Trino restarts (in-app wait is up to 5 minutes).
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 300s
     restart: unless-stopped
     deploy:
       resources:
@@ -195,8 +205,10 @@ services:
         condition: service_healthy
       garage:
         condition: service_healthy
+      # Wait for API healthy (implies Trino was reachable during boot). Do NOT make
+      # trino depend on marple-db healthy — that would deadlock (API waits on Trino).
       marple-db:
-        condition: service_started
+        condition: service_healthy
       trino:
         condition: service_started
     restart: unless-stopped
@@ -230,6 +242,8 @@ services:
       - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/etc:/etc/trino
       - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/plugin:/usr/lib/trino/plugin/marpledb:ro
       - ${COMPOSE_PATH_SWAP:-${COMPOSE_PATH_ROOT}/swap}/imports/trino/spill:/data/spill
+    # service_started only: marple-db prepare writes Trino config, then serve waits for
+    # Trino before the API becomes healthy. Healthy here would deadlock startup.
     depends_on:
       marple-db:
         condition: service_started

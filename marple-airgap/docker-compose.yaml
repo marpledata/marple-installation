@@ -136,8 +136,18 @@ services:
       - ${COMPOSE_PORT_DB:-8000}:80 # first port is host
     volumes: *mdb-volumes
     depends_on:
-      - marple-postgres
-      - marple-garage
+      marple-postgres:
+        condition: service_healthy
+      marple-garage:
+        condition: service_healthy
+    # Healthy only after serve finishes wait_for_dependencies and gunicorn is up.
+    # start_period must cover prepare + Trino coming up (in-app wait is up to 5 minutes).
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8000/api/v1/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 300s
     restart: unless-stopped
     deploy:
       resources:
@@ -160,8 +170,9 @@ services:
         condition: service_healthy
       marple-garage:
         condition: service_healthy
+      # Wait for API healthy (implies deps were reachable during boot).
       marple-db:
-        condition: service_started
+        condition: service_healthy
       marple-trino:
         condition: service_started
     restart: unless-stopped
@@ -183,6 +194,8 @@ services:
       - .env
     environment:
       CATALOG_MANAGEMENT: dynamic
+    # No depends_on marple-db: config is static here. The API waits on Trino before
+    # becoming healthy, so depending the other way on healthy would deadlock.
     volumes:
       # Airgap uses a minimal static config (no password auth). See trino/config.properties.
       - ./trino/config.properties:/etc/trino/config.properties:ro
