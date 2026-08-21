@@ -53,7 +53,7 @@ Rename the `.env.example` file to `.env` and set the required fields:
 ```bash
 docker login docker.marpledata.com # log in with a robot account provided by Marple
 docker compose pull
-docker compose up -d marple-garage # skip if you are not using Garage
+docker compose up -d garage # skip if you are not using Garage
 docker compose ps
 ```
 
