@@ -63,9 +63,9 @@ services:
       - ${COMPOSE_PATH_ROOT}/postgres:/var/lib/postgresql
     restart: unless-stopped
 
-  garage:
-    image: dxflrs/garage:v2.1.0
+  marple-garage:
     container_name: marple-garage
+    image: dxflrs/garage:v2.1.0
     ports:
       - "3900:3900" # S3 API
       - "3903:3903" # Admin API
