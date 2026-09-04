@@ -52,7 +52,8 @@ Rename the `.env.example` file to `.env` and set the required fields:
 
 ```bash
 docker login docker.marpledata.com # log in with a robot account provided by Marple
-docker compose up -d
+docker compose pull
+docker compose up -d garage # skip if you are not using Garage
 docker compose ps
 ```
 
@@ -101,7 +102,14 @@ If using the local object storage (Garage), you'll need to configure it when run
   docker compose up -d
   ```
 
-### b. Configure OAUTH IdP
+### b. Start all Docker services
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+### c. Configure OAUTH IdP
 
 _Can be skipped if using 'OFFLINE' auth_
 
@@ -119,7 +127,7 @@ _Can be skipped if using 'OFFLINE' auth_
      - Allowed logout URLs: https://insight.marple.example.com/logout, https://db.marple.example.com/logout
    - Fill in OIDC_DOMAIN, OIDC_ISSUER, OIDC_CLIENT, OIDC_AUDIENCE, OIDC_SCOPE as needed in the `.env` file
 
-### c. Various
+### d. Various
 
 - Configure S3 CORS (Necessary to upload files via the DB UI)
   - `docker exec -it marple-db poetry run python configure-upload-cors -o https://db.marple.example.com`
