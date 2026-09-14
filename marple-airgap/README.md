@@ -40,11 +40,12 @@ The stack runs these application containers:
 - `marple-db-worker` — ingestion and data-processing workers
 - `marple-trino` — query engine (minimal static config in `trino/config.properties`, no password auth)
 
-Pull and start the docker containers by executing
+Pull the docker containers and start garage for further setup by executing
 
 ```bash
 docker login docker.marpledata.com # log in with a robot account provided by Marple
-docker compose up -d
+docker compose pull
+docker compose up -d marple-garage
 docker compose ps
 ```
 
@@ -95,6 +96,13 @@ If using the local object storage (Garage), you'll need to configure it when run
   docker compose down
   docker compose up -d
   ```
+
+### b. Start all docker containers
+
+```bash
+docker compose up -d
+docker compose ps
+```
 
 ## 4. Set up your workspaces
 

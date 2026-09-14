@@ -13,6 +13,7 @@ x-mdb-environment: &mdb-environment
   MDB_OIDC_CLIENT: $OIDC_CLIENT
   MDB_OIDC_AUDIENCE: $OIDC_AUDIENCE
   MDB_OIDC_SCOPE: $OIDC_SCOPE
+  MDB_OIDC_USE_ID_TOKEN: $OIDC_USE_ID_TOKEN
 
 # The worker must see the same uploads / scratch / trino config as the web container.
 # All temporary/scratch data lives under COMPOSE_PATH_SWAP (default: COMPOSE_PATH_ROOT/swap),
@@ -37,6 +38,9 @@ x-insight-environment: &insight-environment
   MARPLE_OAUTH_APP_CLIENT_ID: $OIDC_CLIENT
   MARPLE_OAUTH_API_AUDIENCE: $OIDC_AUDIENCE
   MARPLE_OAUTH_SCOPE: $OIDC_SCOPE
+  MARPLE_OAUTH_USE_ID_TOKEN: $OIDC_USE_ID_TOKEN
+  MARPLE_OAUTH_GROUP_KEY: $OIDC_GROUP_KEY
+  MARPLE_OAUTH_METADATA_SEED: $OIDC_METADATA_SEED
 
 # The queue writes exported files under PATH_ROOT/exports; the web container serves them back.
 x-insight-volumes: &insight-volumes
