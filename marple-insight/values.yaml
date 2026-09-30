@@ -56,8 +56,12 @@ env:
     value: "https://api.openai.com/v1"
   - name: MARPLE_AI_MODEL
     value: "gpt-4o-mini"
+  - name: MARPLE_E2B_API_KEY
+    value: ""
+  - name: MARPLE_E2B_TEMPLATE
+    value: "marple-notebook"
   - name: MARPLE_API_WORKERS
-    value: "4" # 0 = auto (2*CPU+1). Profile hints: small=2, medium=3, large=5
+    value: "4" # 0 = auto (one process per CPU). Profile hints: small=2, medium=3, large=5
   - name: MARPLE_PROCRASTINATE_WORKERS
     value: "4" # queue export concurrency. Profile hints: small=2, medium=3, large=5
 

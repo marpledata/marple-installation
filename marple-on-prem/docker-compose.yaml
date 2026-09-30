@@ -165,7 +165,7 @@ services:
 
   marple-db:
     container_name: marple-db
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.2}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.12.0}
     command: ["./start.sh", "web"]
     init: true
     env_file:
@@ -196,7 +196,7 @@ services:
 
   marple-db-worker:
     container_name: marple-db-worker
-    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.9.2}
+    image: docker.marpledata.com/library/marple-db:${VERSION_DB:-3.12.0}
     command: ["./start.sh", "worker"]
     init: true
     env_file:
