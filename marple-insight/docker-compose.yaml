@@ -30,6 +30,8 @@ services:
     working_dir: /marple-core
     entrypoint: []
     command: ["poetry", "run", "python", "queue_worker.py"]
+    # Shares the marple container's network so Playwright exports can reach the UI at localhost:80
+    # Only problem is: restarting marple container without restarting the queue cuts off internet access ...
     network_mode: "service:marple"
     volumes: *insight-volumes
     depends_on:
