@@ -11,7 +11,8 @@ services:
     ports:
       - $MDB_PORT:80
     volumes:
-      - $DOCKER_PATH_ROOT:/srv/marpledb
+      - $DOCKER_PATH_ROOT/swap:/srv/marpledb/swap
+      - $DOCKER_PATH_ROOT/log:/srv/marpledb/log
       - $DOCKER_PATH_ROOT/.usage-automation.json:/etc/marple/.usage-automation.json
     # start_period covers prepare + Trino boot (in-app wait up to 5 min).
     healthcheck:
@@ -37,7 +38,8 @@ services:
       - .env
     # Must see the same uploads / scratch / trino config as the web container.
     volumes:
-      - $DOCKER_PATH_ROOT:/srv/marpledb
+      - $DOCKER_PATH_ROOT/swap:/srv/marpledb/swap
+      - $DOCKER_PATH_ROOT/log:/srv/marpledb/log
     depends_on:
       marple-db:
         condition: service_healthy
@@ -55,8 +57,18 @@ services:
   trino:
     container_name: $TRINO_CONTAINER_NAME
     image: trinodb/trino:479
-    env_file:
-      - .env
+    # The variables the config in swap/trino/etc reads via ${ENV:...}.
+    environment:
+      MDB_DB_HOST: $MDB_DB_HOST
+      MDB_DB_PORT: $MDB_DB_PORT
+      MDB_DB_NAME: $MDB_DB_NAME
+      MDB_DB_USER: $MDB_DB_USER
+      MDB_DB_PASSWORD: $MDB_DB_PASSWORD
+      TRINO_SHARED_SECRET: $TRINO_SHARED_SECRET
+      TRINO_QUERY_MAX_MEMORY: $TRINO_QUERY_MAX_MEMORY
+      TRINO_QUERY_MAX_MEMORY_PER_NODE: $TRINO_QUERY_MAX_MEMORY_PER_NODE
+      TRINO_QUERY_MAX_TOTAL_MEMORY: $TRINO_QUERY_MAX_TOTAL_MEMORY
+      TRINO_HEAP_HEADROOM_PER_NODE: $TRINO_HEAP_HEADROOM_PER_NODE
     # service_started only — healthy would deadlock (API waits on Trino during boot).
     depends_on:
       marple-db:
