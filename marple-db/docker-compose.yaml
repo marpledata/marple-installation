@@ -13,8 +13,6 @@ services:
     volumes:
       - $DOCKER_PATH_ROOT/swap:/srv/marpledb/swap
       - $DOCKER_PATH_ROOT/log:/srv/marpledb/log
-      - $DOCKER_PATH_ROOT/cold:/srv/marpledb/cold
-      - $DOCKER_PATH_ROOT/backup:/srv/marpledb/backup
       - $DOCKER_PATH_ROOT/.usage-automation.json:/etc/marple/.usage-automation.json
     # start_period covers prepare + Trino boot (in-app wait up to 5 min).
     healthcheck:
@@ -42,8 +40,6 @@ services:
     volumes:
       - $DOCKER_PATH_ROOT/swap:/srv/marpledb/swap
       - $DOCKER_PATH_ROOT/log:/srv/marpledb/log
-      - $DOCKER_PATH_ROOT/cold:/srv/marpledb/cold
-      - $DOCKER_PATH_ROOT/backup:/srv/marpledb/backup
     depends_on:
       marple-db:
         condition: service_healthy
